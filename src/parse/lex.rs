@@ -1,13 +1,18 @@
+// An iterator with a peek() that returns
+// an optional reference to the next element
 use std::iter::Peekable;
 use std::str::Chars;
 
 use peeking_take_while::PeekableExt;
 
+// PartialEq -> eq for comparing
+// Derive -> automatically creates the implementation
+// required to make this `enum` printable
 #[derive(Debug, PartialEq)]
 pub enum Token {
-    Atom(String),
-    Num(f64),
-    Brace(char),
+    Atom(String), // Symbole für Mathematik
+    Number(f64), // Zahlen
+    Brace(char), // Klammern
 }
 
 fn take_number(it: &mut Peekable<Chars>) -> f64 {
@@ -23,8 +28,9 @@ pub fn tokenize(input: String) -> Vec<Token> {
     let mut it = input.chars().peekable();
     while let Some(&next) = it.peek() {
         match next {
-            '0'..='9' => tokens.push(Token::Num(take_number(&mut it))),
+            '0'..='9' => tokens.push(Token::Number(take_number(&mut it))),
             '(' | ')' => tokens.push(Token::Brace(it.next().unwrap())),
+            '+' | '-' | '/' | '*' => tokens.push(Token::Atom(it.next().unwrap())),
             _ => unimplemented!()
         };
     }
@@ -51,9 +57,9 @@ mod test {
     test_tokenize!(
         tokenize_empty: "()" => vec![Token::Brace('('), Token::Brace(')')],
         tokenize_integer: "1" => vec![Token::Num(1.0)],
-        tokenize_long_integer: "1234" => vec![Token::Num(1234.0)],
+        tokenize_long_integer: "1234" => vec![Token::Number(1234.0)],
         tokenize_float: "1.234" => vec![Token::Num(1.234)],
-        tokenize_integer_expr: "(1)" => vec![Token::Brace('('), Token::Num(1.0), Token::Brace(')')]
+        tokenize_integer_expr: "(1)" => vec![Token::Brace('('), Token::Number(1.0), Token::Brace(')')]
     );
 
     // tokenize_one: "(foo)" => vec![Token::Brace('('), Token::Atom("foo".to_string()), Token::Brace(')')]
