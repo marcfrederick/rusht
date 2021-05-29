@@ -1,7 +1,7 @@
 use std::iter::Peekable;
 use std::str::Chars;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Token {
     Paren(char),
     Num(f64),
@@ -77,6 +77,7 @@ fn take_ident_or_bool(it: &mut Peekable<Chars>) -> Token {
 #[cfg(test)]
 mod test {
     use super::*;
+    use super::Token::*;
 
     macro_rules! test_tokenize {
         ($($name:ident: $input:expr => $expected:expr),*) => {
@@ -91,21 +92,21 @@ mod test {
     }
 
     test_tokenize!(
-        tokenize_empty: "()" => vec![Token::Paren('('), Token::Paren(')')],
-        tokenize_integer: "1" => vec![Token::Num(1.0)],
-        tokenize_long_integer: "1234" => vec![Token::Num(1234.0)],
-        tokenize_float: "1.234" => vec![Token::Num(1.234)],
-        tokenize_str: "\"foo\"" => vec![Token::Str("foo".to_string())],
-        tokenize_bool_true: "true" => vec![Token::Bool(true)],
-        tokenize_bool_false: "false" => vec![Token::Bool(false)],
+        tokenize_empty: "()" => vec![Paren('('), Paren(')')],
+        tokenize_integer: "1" => vec![Num(1.0)],
+        tokenize_long_integer: "1234" => vec![Num(1234.0)],
+        tokenize_float: "1.234" => vec![Num(1.234)],
+        tokenize_str: "\"foo\"" => vec![Str("foo".to_string())],
+        tokenize_bool_true: "true" => vec![Bool(true)],
+        tokenize_bool_false: "false" => vec![Bool(false)],
         tokenize_expr: "(foo 1 \"bar\" false 2)" => vec![
-            Token::Paren('('),
-            Token::Ident("foo".to_string()),
-            Token::Num(1.0),
-            Token::Str("bar".to_string()),
-            Token::Bool(false),
-            Token::Num(2.0),
-            Token::Paren(')')
+            Paren('('),
+            Ident("foo".to_string()),
+            Num(1.0),
+            Str("bar".to_string()),
+            Bool(false),
+            Num(2.0),
+            Paren(')')
         ]
     );
 }
