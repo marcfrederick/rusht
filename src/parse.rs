@@ -47,6 +47,7 @@ mod test {
     test_parse!(
         test_empty: vec![Paren('('), Paren(')')] => Ast::List(vec![Ast::List(vec![])]),
         test_single: vec![Paren('('), Num(4.0), Paren(')')] => Ast::List(vec![Ast::List(vec![Ast::Atom(Num(4.0))])]),
-        test_nested: vec![Paren('('), Num(4.0), Paren('('), Num(5.0), Str("foo".to_string()), Paren(')'), Paren(')')] => Ast::List(vec![Ast::List(vec![Ast::Atom(Num(4.0)), Ast::List(vec![Ast::Atom(Num(5.0)), Ast::Atom(Str("foo".to_string()))])])])
+        test_nested: vec![Paren('('), Num(4.0), Paren('('), Num(5.0), Str("foo".to_string()), Paren(')'), Paren(')')] 
+        => Ast::List(vec![Ast::List(vec![Ast::Atom(Num(4.0)), Ast::List(vec![Ast::Atom(Num(5.0)), Ast::Atom(Str("foo".to_string()))])])])
     );
 }
