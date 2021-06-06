@@ -3,44 +3,40 @@ use std::collections::HashMap;
 use crate::parse::Ast;
 use crate::tokenize::Token;
 
-fn add(args: Vec<Token>) -> Token {
-    let mut sum = 0.0;
+fn math(args: Vec<Token>) -> Token {
+    let mut result = 0.0;
     for x in args {
         match x {
-            Token::Num(n) => sum += n,
-            _ => panic!("Not a number")
+            Token::Num(n) => {
+                match {
+                    '+' => result += n, 
+                    '-' => result -= n,
+                    '*' => result *= n,
+                    '/' => result /= n,
+                    _ => panic!("Not a number")
+                }
+            }
+            
         }
     }
-    Token::Num(sum)
+    Token::Num(result)
 }
 
+
+
 pub fn interpret(ast: Ast) -> Token {
-    let mut env = HashMap::new();
-    env.insert(String::from("+"), add);
+    let mut tokenmap = HashMap::new();
 
-<<<<<<< HEAD
-fn interpret(ast: Ast) {
-    let mut nums = vec![];
-    match ast {
-        Ast::Atom(_) => {
-
-        }
-        Ast::List(_) => {
-
-        }
-=======
     match ast {
         Ast::Atom(token) => token,
         Ast::List(tokens) => {
-            let tokens = tokens.iter()
+            let charac = tokens.iter()
                 .map(|t| interpret(t.clone()))
                 .collect::<Vec<_>>();
 
-            match tokens.get(0).unwrap() {
+            match charac.unwrap() {
                 Token::Ident(ident) => {
-                    let func = env.get(ident).expect("function not found in env");
-                    let args = tokens.into_iter().skip(1).collect::<Vec<_>>();
-                    func(args)
+                    let function = tokenmap.insert(ident.to_string, math);
                 },
                 _ => panic!()
             }
@@ -53,7 +49,7 @@ mod test {
     use super::*;
 
     #[test]
-    fn single_add() {
+    fn single_math() {
         let out = interpret(Ast::List(vec![
             Ast::Atom(Token::Ident(String::from("+"))),
             Ast::Atom(Token::Num(4.0)),
@@ -64,23 +60,18 @@ mod test {
     }
 
     #[test]
-    fn nested_add() {
+    fn nested_math() {
         let out = interpret(Ast::List(vec![
-            Ast::Atom(Token::Ident(String::from("+"))),
-            Ast::Atom(Token::Num(4.0)),
+            Ast::Atom(Token::Ident(String::from("-"))),
+            Ast::Atom(Token::Num(6.0)),
             Ast::Atom(Token::Num(5.0)),
+            Ast::Atom(Token::Ident(String::from("*"))),
             Ast::List(vec![
-                Ast::Atom(Token::Ident(String::from("+"))),
+                Ast::Atom(Token::Ident(String::from("/"))),
                 Ast::Atom(Token::Num(10.0)),
                 Ast::Atom(Token::Num(5.0)),
             ]),
         ]));
-        assert_eq!(out, Token::Num(24.0))
->>>>>>> master
+        assert_eq!(out, Token::Num(2.0))
     }
-}
-
-
-fn add() -> f64 {
-
 }
