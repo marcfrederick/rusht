@@ -7,15 +7,11 @@ fn math(args: Vec<Token>) -> Token {
     let mut result = 0.0;
     for x in args {
         match x {
-            Token::Num(n) => {
-                match {
-                    '+' => result += n, 
-                    '-' => result -= n,
-                    '*' => result *= n,
-                    '/' => result /= n,
-                    _ => panic!("Not a number")
-                }
-            }
+            '+' => result += x, 
+            '-' => result -= x,
+            '*' => result *= x,
+            '/' => result /= x,
+            _ => panic!("Not a number")
             
         }
     }
@@ -25,7 +21,8 @@ fn math(args: Vec<Token>) -> Token {
 
 
 pub fn interpret(ast: Ast) -> Token {
-    let mut tokenmap = HashMap::new();
+    let mut mathmap = HashMap::new();
+    let mut numvec = vec![];
 
     match ast {
         Ast::Atom(token) => token,
@@ -36,7 +33,10 @@ pub fn interpret(ast: Ast) -> Token {
 
             match charac.unwrap() {
                 Token::Ident(ident) => {
-                    let function = tokenmap.insert(ident.to_string, math);
+                    let function = mathmap.insert(ident.to_string, math);
+                },
+                Token::Num(num) => {
+                    let args = numvec.insert(num);
                 },
                 _ => panic!()
             }
