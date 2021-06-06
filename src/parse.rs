@@ -2,7 +2,7 @@ use std::slice::Iter;
 
 use crate::tokenize::Token;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum Ast {
     Atom(Token),
     List(Vec<Ast>),
