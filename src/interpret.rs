@@ -22,7 +22,6 @@ fn math(args: Vec<Token>) -> Token {
 
 pub fn interpret(ast: Ast) -> Token {
     let mut mathmap = HashMap::new();
-    let mut numvec = vec![];
 
     match ast {
         Ast::Atom(token) => token,
@@ -35,11 +34,9 @@ pub fn interpret(ast: Ast) -> Token {
                 Token::Ident(ident) => {
                     let function = mathmap.insert(ident.to_string, math);
                 },
-                Token::Num(num) => {
-                    let args = numvec.insert(num);
-                },
                 _ => panic!()
             }
+
         }
     }
 }
