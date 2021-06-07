@@ -25,12 +25,12 @@ pub fn interpret(ast: Ast) -> Token {
                 .map(|t| interpret(t.clone()))
                 .collect::<Vec<_>>();
 
-            match tokens.get(0).unwrap() {
+            let (func, args) = tokens.split_at(1);
+            match func.get(0).unwrap() {
                 Token::Ident(ident) => {
                     let func = env.get(ident).expect("function not found in env");
-                    let args = tokens.into_iter().skip(1).collect::<Vec<_>>();
-                    func(args)
-                },
+                    func(args.to_vec())
+                }
                 _ => panic!()
             }
         }
