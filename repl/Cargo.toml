@@ -1,0 +1,12 @@
+[package]
+name = "repl"
+version = "0.1.0"
+authors = ["Marc Troelitzsch <Marc.Troelitzsch@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+anyhow = "1.0.40"
+clap = { version = "3.0.0-beta.2", default-features = false, features = ["std"] }
+dirs = "3.0.2"
+linefeed = "0.6.0"
+rusht = { version = "0.1.0", path = "../rusht" }
