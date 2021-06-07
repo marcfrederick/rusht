@@ -4,9 +4,22 @@ use crate::parse::Ast;
 use crate::prelude;
 use crate::tokenize::Token;
 
+macro_rules! hash_map {
+    ($($key:expr => $val:expr),*) => {
+        {
+            let mut hash_map = HashMap::new();
+            $(
+                hash_map.insert($key, $val);
+            )*
+            hash_map
+        }
+    };
+}
+
 pub fn interpret(ast: Ast) -> Token {
-    let mut env = HashMap::new();
-    env.insert(String::from("+"), prelude::add);
+    let env = hash_map!(
+        "+" => prelude::add
+    );
 
     match ast {
         Ast::Atom(token) => token,
@@ -18,6 +31,7 @@ pub fn interpret(ast: Ast) -> Token {
             let (func, args) = tokens.split_at(1);
             match func.get(0).unwrap() {
                 Token::Ident(ident) => {
+                    let ident = (*ident).as_str();
                     let func = env.get(ident).expect("function not found in env");
                     func(args.to_vec())
                 }
