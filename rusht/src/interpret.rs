@@ -1,22 +1,12 @@
 use std::collections::HashMap;
 
 use crate::parse::Ast;
+use crate::prelude;
 use crate::tokenize::Token;
-
-fn add(args: Vec<Token>) -> Token {
-    let mut sum = 0.0;
-    for x in args {
-        match x {
-            Token::Num(n) => sum += n,
-            _ => panic!("Not a number")
-        }
-    }
-    Token::Num(sum)
-}
 
 pub fn interpret(ast: Ast) -> Token {
     let mut env = HashMap::new();
-    env.insert(String::from("+"), add);
+    env.insert(String::from("+"), prelude::add);
 
     match ast {
         Ast::Atom(token) => token,
