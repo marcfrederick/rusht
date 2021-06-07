@@ -1,8 +1,9 @@
 use std::path::PathBuf;
+use std::sync::Arc;
 
 use anyhow::{bail, Context, Result};
 use clap::{App, Arg};
-use linefeed::{DefaultTerminal, Interface, ReadResult};
+use linefeed::{Command, DefaultTerminal, Function, Interface, Prompter, ReadResult, Terminal};
 
 use rusht::parse::Ast;
 
@@ -10,6 +11,29 @@ const PROGRAM_NAME: &str = "rusht";
 const REPL_PROMPT: &str = "rusht> ";
 const REPL_HISTORY_FILE_NAME: &str = ".rusht_history";
 const REPL_HISTORY_SIZE: usize = 100;
+
+struct RushtAccept;
+
+impl<Term: Terminal> Function<Term> for RushtAccept {
+    fn execute(&self, prompter: &mut Prompter<Term>, count: i32, _ch: char) -> std::io::Result<()> {
+        // TODO: Match out for specific errors (unclosed paren, ...) and do either
+        //  `prompter.accept_input()` or ` prompter.insert(count as usize, '\n')`
+        let buf = prompter.buffer().to_string();
+
+        let hook = std::panic::take_hook();
+        std::panic::set_hook(Box::new(|_info| {}));
+        let result = std::panic::catch_unwind(|| {
+            interpret(buf).expect("")
+        });
+        std::panic::set_hook(hook);
+
+        if result.is_ok() {
+            prompter.accept_input()
+        } else {
+            prompter.insert(count as usize, '\n')
+        }
+    }
+}
 
 
 fn main() -> Result<()> {
@@ -49,8 +73,10 @@ fn start_repl() -> Result<()> {
             .context("failed to interpret line")?;
     }
 
-    reader.save_history(history_file_path()?)
-        .context("failed to write history")?;
+    if let Some(p) = history_file_path() {
+        reader.save_history(p)
+            .context("failed to write history")?;
+    }
 
     Ok(())
 }
@@ -66,6 +92,15 @@ fn init_reader() -> Result<Interface<DefaultTerminal>> {
     reader.set_history_size(REPL_HISTORY_SIZE);
     if let Some(p) = history_file_path() {
         reader.load_history(p).context("failed to load history")?
+    }
+
+    reader.define_function("rusht-accept", Arc::from(RushtAccept));
+    reader.bind_sequence("\n", Command::from_str("rusht-accept"));
+    reader.bind_sequence("\r", Command::from_str("rusht-accept"));
+    {
+        let mut reader = reader.lock_reader();
+        reader.blink_matching_paren();
+        reader.set_string_chars("\"");
     }
 
     Ok(reader)
