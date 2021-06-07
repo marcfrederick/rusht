@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 use anyhow::{bail, Context, Result};
 use clap::{App, Arg};
-use linefeed::{Interface, ReadResult};
+use linefeed::{DefaultTerminal, Interface, ReadResult};
 
 use rusht::parse::Ast;
 
@@ -36,6 +36,24 @@ fn interpret_file(file_name: &str) -> Result<()> {
 }
 
 fn start_repl() -> Result<()> {
+    let reader = init_reader()
+        .context("failed to initialize reader")?;
+
+    while let ReadResult::Input(input) = reader.read_line().context("failed to read line")? {
+        reader.add_history(input.clone());
+
+        interpret(input)
+            .map(|result| println!("{:?}", result))
+            .context("failed to interpret line")?;
+    }
+
+    reader.save_history(history_file_path()?)
+        .context("failed to write history")?;
+
+    Ok(())
+}
+
+fn init_reader() -> Result<Interface<DefaultTerminal>> {
     let reader = Interface::new(PROGRAM_NAME)
         .context("failed to get terminal interface")?;
 
@@ -52,18 +70,7 @@ fn start_repl() -> Result<()> {
         result => result
     }?;
 
-    while let ReadResult::Input(input) = reader.read_line().context("failed to read line")? {
-        reader.add_history(input.clone());
-
-        interpret(input)
-            .map(|result| println!("{:?}", result))
-            .context("failed to interpret line")?;
-    }
-
-    reader.save_history(history_file_path()?)
-        .context("failed to write history")?;
-
-    Ok(())
+    Ok(reader)
 }
 
 fn history_file_path() -> Result<PathBuf> {
