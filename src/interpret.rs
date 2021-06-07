@@ -3,72 +3,46 @@ use std::collections::HashMap;
 use crate::parse::Ast;
 use crate::tokenize::Token;
 
-fn math(args: Vec<Token>) -> Token {
+
+fn add(args: Vec<f64>) -> Token {
     let mut result = 0.0;
-    for x in args {
+    for x in nums {
         match x {
-            '+' => result += x, 
-            '-' => result -= x,
-            '*' => result *= x,
-            '/' => result /= x,
-            _ => panic!("Not a number")
-            
+            Token::Num(n) => result += n,
+            _ => panic!()
         }
     }
     Token::Num(result)
 }
 
 
+pub fn interpret(ast: Ast) -> Token 
+{
 
-pub fn interpret(ast: Ast) -> Token {
-    let mut mathmap = HashMap::new();
+    let mut nums = vec![];
 
     match ast {
-        Ast::Atom(token) => token,
-        Ast::List(tokens) => {
-            let charac = tokens.iter()
-                .map(|t| interpret(t.clone()))
+        Ast::Atom(atom) => atom,
+        Ast::List(list) => {
+            let tokens = list.iter()
+                .map(|x| interpret(x.clone()))
                 .collect::<Vec<_>>();
 
-            match charac.unwrap() {
-                Token::Ident(ident) => {
-                    let function = mathmap.insert(ident.to_string, math);
+            match tokens {
+                Token::Num(num) => {
+                    nums.push(num);
                 },
+                Token::Ident(ident) => {
+                    match ident.as_str() {
+                        "+" => add(nums),
+                        "-" => sub(nums),
+                        "*" => mul(nums),
+                        "/" => div(nums),
+                        _ => panic!("No math operation\n")
+                    }
+                }
                 _ => panic!()
             }
-
         }
-    }
-}
-
-#[cfg(test)]
-mod test {
-    use super::*;
-
-    #[test]
-    fn single_math() {
-        let out = interpret(Ast::List(vec![
-            Ast::Atom(Token::Ident(String::from("+"))),
-            Ast::Atom(Token::Num(4.0)),
-            Ast::Atom(Token::Num(5.0)),
-            Ast::Atom(Token::Num(15.0)),
-        ]));
-        assert_eq!(out, Token::Num(24.0))
-    }
-
-    #[test]
-    fn nested_math() {
-        let out = interpret(Ast::List(vec![
-            Ast::Atom(Token::Ident(String::from("-"))),
-            Ast::Atom(Token::Num(6.0)),
-            Ast::Atom(Token::Num(5.0)),
-            Ast::Atom(Token::Ident(String::from("*"))),
-            Ast::List(vec![
-                Ast::Atom(Token::Ident(String::from("/"))),
-                Ast::Atom(Token::Num(10.0)),
-                Ast::Atom(Token::Num(5.0)),
-            ]),
-        ]));
-        assert_eq!(out, Token::Num(2.0))
     }
 }
