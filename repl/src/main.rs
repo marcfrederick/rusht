@@ -1,33 +1,74 @@
+use anyhow::{bail, Context, Result};
+use clap::{App, Arg};
 use linefeed::{Interface, ReadResult};
 
 use rusht::parse::Ast;
 
-const PROMPT: &str = "rusht> ";
-const HISTORY_FILE_NAME: &str = ".rusht_history";
+const PROGRAM_NAME: &str = "rusht";
+const REPL_PROMPT: &str = "rusht> ";
+const REPL_HISTORY_FILE_NAME: &str = ".rusht_history";
+const REPL_HISTORY_SIZE: usize = 100;
 
 
-fn main() -> std::io::Result<()> {
-    let history_file = dirs::home_dir()
-        .map(|d| d.join(HISTORY_FILE_NAME))
-        .expect("failed to construct history file path");
+fn main() -> Result<()> {
+    let matches = App::new(PROGRAM_NAME)
+        .version("0.1.0")
+        .author("Isabella Schön, Marc Trölitzsch")
+        .arg(Arg::new("FILE").about("program read from script file"))
+        .get_matches();
 
-    let reader = Interface::new("rusht")?;
-
-    reader.set_prompt(PROMPT)?;
-    reader.load_history(&history_file)?;
-
-    while let ReadResult::Input(input) = reader.read_line()? {
-        reader.add_history_unique(input.clone());
-
-        let tokens = rusht::tokenize::tokenize(input.as_str());
-        let ast = rusht::parse::parse(tokens);
-        match ast {
-            Ast::List(x) => println!("{:?}", rusht::interpret::interpret(x.get(0).unwrap().clone())),
-            _ => panic!("asdf")
-        }
+    match matches.value_of("FILE") {
+        None => start_repl(),
+        Some(file) => interpret_file(file)
     }
+}
 
-    reader.save_history(&history_file)?;
+fn interpret_file(file_name: &str) -> Result<()> {
+    let src = std::fs::read_to_string(file_name)
+        .context("failed to read program from file")?;
+
+    let result = interpret(src).context("failed to interpret file")?;
+    println!("{:?}", result);
 
     Ok(())
+}
+
+fn start_repl() -> Result<()> {
+    let reader = Interface::new(PROGRAM_NAME)
+        .context("failed to get terminal interface")?;
+
+    reader.set_prompt(REPL_PROMPT).context("failed to set prompt")?;
+    reader.set_history_size(REPL_HISTORY_SIZE);
+    match reader.load_history(REPL_HISTORY_FILE_NAME) {
+        Err(ref e) if e.kind() == std::io::ErrorKind::NotFound => {
+            // load_history will return an error, if no history file exists. We are explicitly
+            // ignoring this error, as we are fine with not loading any history in that case.
+            // The file will be created after the repl has terminated for the first time and will be
+            // available on the next run.
+            Ok(())
+        }
+        result => result
+    }?;
+
+    while let ReadResult::Input(input) = reader.read_line().context("failed to read line")? {
+        reader.add_history(input.clone());
+
+        let result = interpret(input).context("failed to interpret line")?;
+        println!("{:?}", result);
+    }
+
+    reader.save_history(REPL_HISTORY_FILE_NAME).context("failed to write history")?;
+
+    Ok(())
+}
+
+fn interpret(src: String) -> Result<rusht::tokenize::Token> {
+    let tokens = rusht::tokenize::tokenize(src.as_str());
+    match rusht::parse::parse(tokens) {
+        Ast::Atom(_) => bail!("expected to get an Ast::List, got Ast::Atom"),
+        Ast::List(list) => {
+            let ast = list.get(0).unwrap().clone();
+            Ok(rusht::interpret::interpret(ast))
+        }
+    }
 }

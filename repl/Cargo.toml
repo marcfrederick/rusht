@@ -4,9 +4,8 @@ version = "0.1.0"
 authors = ["Marc Troelitzsch <Marc.Troelitzsch@gmail.com>"]
 edition = "2018"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
-rusht = { version = "0.1.0", path = "../rusht" }
+anyhow = "1.0.40"
+clap = { version = "3.0.0-beta.2", default-features = false, features = ["std"] }
 linefeed = "0.6.0"
-dirs = "3.0.2"
+rusht = { version = "0.1.0", path = "../rusht" }
