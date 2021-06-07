@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use anyhow::{bail, Context, Result};
 use clap::{App, Arg};
 use linefeed::{Interface, ReadResult};
@@ -39,7 +41,7 @@ fn start_repl() -> Result<()> {
 
     reader.set_prompt(REPL_PROMPT).context("failed to set prompt")?;
     reader.set_history_size(REPL_HISTORY_SIZE);
-    match reader.load_history(REPL_HISTORY_FILE_NAME) {
+    match reader.load_history(history_file_path()?) {
         Err(ref e) if e.kind() == std::io::ErrorKind::NotFound => {
             // load_history will return an error, if no history file exists. We are explicitly
             // ignoring this error, as we are fine with not loading any history in that case.
@@ -53,13 +55,21 @@ fn start_repl() -> Result<()> {
     while let ReadResult::Input(input) = reader.read_line().context("failed to read line")? {
         reader.add_history(input.clone());
 
-        let result = interpret(input).context("failed to interpret line")?;
-        println!("{:?}", result);
+        interpret(input)
+            .map(|result| println!("{:?}", result))
+            .context("failed to interpret line")?;
     }
 
-    reader.save_history(REPL_HISTORY_FILE_NAME).context("failed to write history")?;
+    reader.save_history(history_file_path()?)
+        .context("failed to write history")?;
 
     Ok(())
+}
+
+fn history_file_path() -> Result<PathBuf> {
+    dirs::home_dir()
+        .map(|d| d.join(REPL_HISTORY_FILE_NAME))
+        .context("failed to construct history file path")
 }
 
 fn interpret(src: String) -> Result<rusht::tokenize::Token> {
