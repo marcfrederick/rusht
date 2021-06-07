@@ -25,8 +25,9 @@ fn main() -> Result<()> {
     }
 }
 
-fn interpret_file(file_name: &str) -> Result<()> {
-    let src = std::fs::read_to_string(file_name)
+/// Interprets the code at the given file path.
+fn interpret_file(file_path: &str) -> Result<()> {
+    let src = std::fs::read_to_string(file_path)
         .context("failed to read program from file")?;
 
     let result = interpret(src).context("failed to interpret file")?;
@@ -35,6 +36,7 @@ fn interpret_file(file_name: &str) -> Result<()> {
     Ok(())
 }
 
+/// Starts a new REPL.
 fn start_repl() -> Result<()> {
     let reader = init_reader()
         .context("failed to initialize reader")?;
@@ -53,32 +55,33 @@ fn start_repl() -> Result<()> {
     Ok(())
 }
 
+/// Returns an initialized terminal interface.
+///
+/// The returned value is either an `Ok`, containing an initialized interface, or an `Err`.
 fn init_reader() -> Result<Interface<DefaultTerminal>> {
     let reader = Interface::new(PROGRAM_NAME)
         .context("failed to get terminal interface")?;
 
     reader.set_prompt(REPL_PROMPT).context("failed to set prompt")?;
     reader.set_history_size(REPL_HISTORY_SIZE);
-    match reader.load_history(history_file_path()?) {
-        Err(ref e) if e.kind() == std::io::ErrorKind::NotFound => {
-            // load_history will return an error, if no history file exists. We are explicitly
-            // ignoring this error, as we are fine with not loading any history in that case.
-            // The file will be created after the repl has terminated for the first time and will be
-            // available on the next run.
-            Ok(())
-        }
-        result => result
-    }?;
+    if let Some(p) = history_file_path() {
+        reader.load_history(p).context("failed to load history")?
+    }
 
     Ok(reader)
 }
 
-fn history_file_path() -> Result<PathBuf> {
+/// Returns the path to the REPL history.
+///
+/// The returned value depends on the operating system and is either a `Some`, containing the path
+/// of an existing history file, or a `None`.
+fn history_file_path() -> Option<PathBuf> {
     dirs::home_dir()
         .map(|d| d.join(REPL_HISTORY_FILE_NAME))
-        .context("failed to construct history file path")
+        .filter(|p| p.exists())
 }
 
+/// Interprets the given `String` and returns the resulting `Token`.
 fn interpret(src: String) -> Result<rusht::tokenize::Token> {
     let tokens = rusht::tokenize::tokenize(src.as_str());
     match rusht::parse::parse(tokens) {
