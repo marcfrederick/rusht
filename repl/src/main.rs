@@ -1,11 +1,9 @@
 use std::path::PathBuf;
 use std::sync::Arc;
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result};
 use clap::{App, Arg};
 use linefeed::{Command, DefaultTerminal, Function, Interface, Prompter, ReadResult, Terminal};
-
-use rusht::parse::Ast;
 
 const PROGRAM_NAME: &str = "rusht";
 const REPL_PROMPT: &str = "rusht> ";
@@ -119,11 +117,6 @@ fn history_file_path() -> Option<PathBuf> {
 /// Interprets the given `String` and returns the resulting `Token`.
 fn interpret(src: String) -> Result<rusht::tokenize::Token> {
     let tokens = rusht::tokenize::tokenize(src.as_str());
-    match rusht::parse::parse(tokens) {
-        Ast::Atom(_) => bail!("expected to get an Ast::List, got Ast::Atom"),
-        Ast::List(list) => {
-            let ast = list.get(0).unwrap().clone();
-            Ok(rusht::interpret::interpret(ast))
-        }
-    }
+    let ast = rusht::parse::parse(tokens);
+    Ok(rusht::interpret::interpret(ast))
 }

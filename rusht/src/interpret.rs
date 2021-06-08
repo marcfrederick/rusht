@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::parse::Ast;
+use crate::parse::Exp;
 use crate::prelude;
 use crate::tokenize::Token;
 
@@ -16,14 +16,14 @@ macro_rules! hash_map {
     };
 }
 
-pub fn interpret(ast: Ast) -> Token {
+pub fn interpret(ast: Exp) -> Token {
     let env = hash_map!(
         "+" => prelude::add
     );
 
     match ast {
-        Ast::Atom(token) => token,
-        Ast::List(tokens) => {
+        Exp::Atom(token) => token,
+        Exp::List(tokens) => {
             let tokens = tokens.iter()
                 .map(|t| interpret(t.clone()))
                 .collect::<Vec<_>>();
@@ -47,25 +47,25 @@ mod test {
 
     #[test]
     fn single_add() {
-        let out = interpret(Ast::List(vec![
-            Ast::Atom(Token::Ident(String::from("+"))),
-            Ast::Atom(Token::Num(4.0)),
-            Ast::Atom(Token::Num(5.0)),
-            Ast::Atom(Token::Num(15.0)),
+        let out = interpret(Exp::List(vec![
+            Exp::Atom(Token::Ident(String::from("+"))),
+            Exp::Atom(Token::Num(4.0)),
+            Exp::Atom(Token::Num(5.0)),
+            Exp::Atom(Token::Num(15.0)),
         ]));
         assert_eq!(out, Token::Num(24.0))
     }
 
     #[test]
     fn nested_add() {
-        let out = interpret(Ast::List(vec![
-            Ast::Atom(Token::Ident(String::from("+"))),
-            Ast::Atom(Token::Num(4.0)),
-            Ast::Atom(Token::Num(5.0)),
-            Ast::List(vec![
-                Ast::Atom(Token::Ident(String::from("+"))),
-                Ast::Atom(Token::Num(10.0)),
-                Ast::Atom(Token::Num(5.0)),
+        let out = interpret(Exp::List(vec![
+            Exp::Atom(Token::Ident(String::from("+"))),
+            Exp::Atom(Token::Num(4.0)),
+            Exp::Atom(Token::Num(5.0)),
+            Exp::List(vec![
+                Exp::Atom(Token::Ident(String::from("+"))),
+                Exp::Atom(Token::Num(10.0)),
+                Exp::Atom(Token::Num(5.0)),
             ]),
         ]));
         assert_eq!(out, Token::Num(24.0))
