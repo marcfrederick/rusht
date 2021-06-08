@@ -8,25 +8,24 @@ macro_rules! hash_map {
     ($($key:expr => $val:expr),*) => {
         {
             let mut hash_map = HashMap::new();
-            $(
-                hash_map.insert($key, $val);
-            )*
+            $( hash_map.insert($key, $val); )*
             hash_map
         }
     };
 }
 
 pub fn interpret(ast: Ast) -> Token {
-    let env = hash_map! {
+    let env = hash_map! 
+    (
         "+" => prelude::add,
         "add" => prelude::add,
-        "-" => prelude::sub,
-        "sub" => prelude::sub,
-        "*" => prelude::mul,
-        "mul" => prelude::mul,
-        "/" => prelude::div,
-        "div" => prelude::div
-    };
+        "-" => prelude::div,
+        //"sub" => prelude::sub,
+        //"*" => prelude::mul,
+        //"mul" => prelude::mul,
+        //"/" => prelude::div,
+        //"div" => prelude::div
+    );
 
     match ast {
         Ast::Atom(token) => token,
