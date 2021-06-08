@@ -19,19 +19,19 @@ macro_rules! hash_map {
 pub fn interpret(ast: Exp) -> Token {
     let env = hash_map!
     (
-        "+" => prelude::add,
-        "add" => prelude::add,
-        "-" => prelude::div,
-        //"sub" => prelude::sub,
-        //"*" => prelude::mul,
-        //"mul" => prelude::mul,
-        //"/" => prelude::div,
-        //"div" => prelude::div
+        "+" => prelude::add as fn(Vec<Token>) -> Token,
+        "add" => prelude::add as fn(Vec<Token>) -> Token,
+        "-" => prelude::sub as fn(Vec<Token>) -> Token,
+        "sub" => prelude::sub as fn(Vec<Token>) -> Token,
+        "*" => prelude::mul as fn(Vec<Token>) -> Token,
+        "mul" => prelude::mul as fn(Vec<Token>) -> Token,
+        "/" => prelude::div as fn(Vec<Token>) -> Token,
+        "div" => prelude::div as fn(Vec<Token>) -> Token
     );
 
     match ast {
-        Ast::Atom(token) => token,
-        Ast::List(tokens) => {
+        Exp::Atom(token) => token,
+        Exp::List(tokens) => {
             let tokens = tokens.iter()
                 .map(|t| interpret(t.clone()))
                 .collect::<Vec<_>>();
@@ -82,13 +82,13 @@ mod test {
 
     #[test]
     fn nested_math() {
-        let out = interpret(Ast::List(vec![
-            Ast::Atom(Token::Ident(String::from("*"))),
-            Ast::Atom(Token::Num(10.0)),
-            Ast::List(vec![
-                Ast::Atom(Token::Ident(String::from("/"))),
-                Ast::Atom(Token::Num(10.0)),
-                Ast::Atom(Token::Num(5.0)),
+        let out = interpret(Exp::List(vec![
+            Exp::Atom(Token::Ident(String::from("*"))),
+            Exp::Atom(Token::Num(10.0)),
+            Exp::List(vec![
+                Exp::Atom(Token::Ident(String::from("/"))),
+                Exp::Atom(Token::Num(10.0)),
+                Exp::Atom(Token::Num(5.0)),
             ]),
         ]));
         assert_eq!(out, Token::Num(20.0))
