@@ -1,30 +1,45 @@
-use std::slice::Iter;
+use std::collections::VecDeque;
+
+use thiserror::Error;
 
 use crate::tokenize::Token;
 
+#[derive(Error, Debug)]
+pub enum Error {
+    #[error("token stream ended unexpectedly")]
+    UnexpectedEndOfTokenStream,
+    #[error("encountered an unexpected closing parenthesis")]
+    UnexpectedClosingParenthesis,
+}
+
+pub type Result<T> = std::result::Result<T, Error>;
+
 #[derive(Debug, PartialEq, Clone)]
-pub enum Ast {
+pub enum Exp {
     Atom(Token),
-    List(Vec<Ast>),
+    List(Vec<Exp>),
 }
 
-pub fn parse(tokens: Vec<Token>) -> Ast {
-    parse_it(&mut tokens.iter())
+pub fn parse(token_stream: Vec<Token>) -> Exp {
+    let mut token_stream = VecDeque::from(token_stream);
+    parse_it(&mut token_stream).unwrap()
 }
 
-fn parse_it(it: &mut Iter<Token>) -> Ast {
-    let mut items = vec![];
-    while let Some(token) = it.next() {
-        let item = match token {
-            Token::Paren('(') => {
-                parse_it(it)
-            },
-            Token::Paren(')') => break,
-            _ => Ast::Atom(token.clone())
-        };
-        items.push(item);
+fn parse_it(token_stream: &mut VecDeque<Token>) -> Result<Exp> {
+    let token = token_stream.pop_front()
+        .ok_or(Error::UnexpectedEndOfTokenStream)?;
+
+    match token {
+        Token::Paren('(') => {
+            let mut l = vec![];
+            while *token_stream.get(0).unwrap() != Token::Paren(')') {
+                l.push(parse_it(token_stream)?);
+            }
+            Ok(Exp::List(l))
+        }
+        Token::Paren(')') => Err(Error::UnexpectedClosingParenthesis),
+        atom => Ok(Exp::Atom(atom))
     }
-    Ast::List(items)
 }
 
 #[cfg(test)]
@@ -45,8 +60,8 @@ mod test {
     }
 
     test_parse!(
-        test_empty: vec![Paren('('), Paren(')')] => Ast::List(vec![Ast::List(vec![])]),
-        test_single: vec![Paren('('), Num(4.0), Paren(')')] => Ast::List(vec![Ast::List(vec![Ast::Atom(Num(4.0))])]),
-        test_nested: vec![Paren('('), Num(4.0), Paren('('), Num(5.0), Str("foo".to_string()), Paren(')'), Paren(')')] => Ast::List(vec![Ast::List(vec![Ast::Atom(Num(4.0)), Ast::List(vec![Ast::Atom(Num(5.0)), Ast::Atom(Str("foo".to_string()))])])])
+        test_empty: vec![Paren('('), Paren(')')] => Exp::List(vec![]),
+        test_single: vec![Paren('('), Num(4.0), Paren(')')] => Exp::List(vec![Exp::Atom(Num(4.0))]),
+        test_nested: vec![Paren('('), Num(4.0), Paren('('), Num(5.0), Str("foo".to_string()), Paren(')'), Paren(')')] => Exp::List(vec![Exp::Atom(Num(4.0)), Exp::List(vec![Exp::Atom(Num(5.0)), Exp::Atom(Str("foo".to_string()))])])
     );
 }
