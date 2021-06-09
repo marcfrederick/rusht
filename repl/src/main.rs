@@ -117,6 +117,6 @@ fn history_file_path() -> Option<PathBuf> {
 /// Interprets the given `String` and returns the resulting `Token`.
 fn interpret(src: String) -> Result<rusht::tokenize::Token> {
     let tokens = rusht::tokenize::tokenize(src.as_str());
-    let ast = rusht::parse::parse(tokens);
-    Ok(rusht::interpret::interpret(ast))
+    let expr = rusht::parse::parse(tokens).unwrap();
+    Ok(rusht::interpret::interpret(expr))
 }

@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::parse::Exp;
+use crate::parse::Expr;
 use crate::prelude;
 use crate::tokenize::Token;
 
@@ -16,7 +16,7 @@ macro_rules! hash_map {
     };
 }
 
-pub fn interpret(ast: Exp) -> Token {
+pub fn interpret(ast: Expr) -> Token {
     let env = hash_map!(
         "+" => prelude::add as fn(Vec<Token>) -> Token,
         "add" => prelude::add as fn(Vec<Token>) -> Token,
@@ -29,8 +29,8 @@ pub fn interpret(ast: Exp) -> Token {
     );
 
     match ast {
-        Exp::Atom(token) => token,
-        Exp::List(tokens) => {
+        Expr::Atom(token) => token,
+        Expr::List(tokens) => {
             let tokens = tokens.iter()
                 .map(|t| interpret(t.clone()))
                 .collect::<Vec<_>>();
@@ -54,25 +54,25 @@ mod test {
 
     #[test]
     fn single_add() {
-        let out = interpret(Exp::List(vec![
-            Exp::Atom(Token::Ident(String::from("+"))),
-            Exp::Atom(Token::Num(4.0)),
-            Exp::Atom(Token::Num(5.0)),
-            Exp::Atom(Token::Num(15.0)),
+        let out = interpret(Expr::List(vec![
+            Expr::Atom(Token::Ident(String::from("+"))),
+            Expr::Atom(Token::Num(4.0)),
+            Expr::Atom(Token::Num(5.0)),
+            Expr::Atom(Token::Num(15.0)),
         ]));
         assert_eq!(out, Token::Num(24.0))
     }
 
     #[test]
     fn nested_add() {
-        let out = interpret(Exp::List(vec![
-            Exp::Atom(Token::Ident(String::from("+"))),
-            Exp::Atom(Token::Num(4.0)),
-            Exp::Atom(Token::Num(5.0)),
-            Exp::List(vec![
-                Exp::Atom(Token::Ident(String::from("+"))),
-                Exp::Atom(Token::Num(10.0)),
-                Exp::Atom(Token::Num(5.0)),
+        let out = interpret(Expr::List(vec![
+            Expr::Atom(Token::Ident(String::from("+"))),
+            Expr::Atom(Token::Num(4.0)),
+            Expr::Atom(Token::Num(5.0)),
+            Expr::List(vec![
+                Expr::Atom(Token::Ident(String::from("+"))),
+                Expr::Atom(Token::Num(10.0)),
+                Expr::Atom(Token::Num(5.0)),
             ]),
         ]));
         assert_eq!(out, Token::Num(24.0))
