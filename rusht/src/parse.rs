@@ -32,7 +32,10 @@ fn parse_it(token_stream: &mut VecDeque<Token>) -> Result<Exp> {
     match token {
         Token::Paren('(') => {
             let mut l = vec![];
-            while *token_stream.get(0).unwrap() != Token::Paren(')') {
+            while let Some(token) = token_stream.get(0) {
+                if *token == Token::Paren(')') {
+                    break;
+                }
                 l.push(parse_it(token_stream)?);
             }
             Ok(Exp::List(l))
