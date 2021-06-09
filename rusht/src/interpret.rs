@@ -1,9 +1,8 @@
-use std::collections::HashMap;
-
+use crate::Env;
 use crate::parse::Expr;
 use crate::tokenize::Token;
 
-pub fn interpret(ast: Expr, env: &HashMap<String, fn(Vec<Token>) -> Token>) -> Token {
+pub fn interpret(ast: Expr, env: &Env) -> Token {
     match ast {
         Expr::Atom(token) => token,
         Expr::List(tokens) => {
