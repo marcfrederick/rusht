@@ -18,7 +18,14 @@ macro_rules! hash_map {
 
 pub fn interpret(ast: Exp) -> Token {
     let env = hash_map!(
-        "+" => prelude::add
+        "+" => prelude::add as fn(Vec<Token>) -> Token,
+        "add" => prelude::add as fn(Vec<Token>) -> Token,
+        "-" => prelude::sub as fn(Vec<Token>) -> Token,
+        "sub" => prelude::sub as fn(Vec<Token>) -> Token,
+        "*" => prelude::mul as fn(Vec<Token>) -> Token,
+        "mul" => prelude::mul as fn(Vec<Token>) -> Token,
+        "/" => prelude::div as fn(Vec<Token>) -> Token,
+        "div" => prelude::div as fn(Vec<Token>) -> Token
     );
 
     match ast {
