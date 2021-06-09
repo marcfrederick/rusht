@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::Arc;
 
@@ -6,12 +7,25 @@ use clap::{App, Arg};
 use linefeed::{Command, DefaultTerminal, Function, Interface, Prompter, ReadResult, Terminal};
 
 use rusht::parse::parse;
-use rusht::tokenize::tokenize;
+use rusht::prelude;
+use rusht::tokenize::{Token, tokenize};
 
 const PROGRAM_NAME: &str = "rusht";
 const REPL_PROMPT: &str = "rusht> ";
 const REPL_HISTORY_FILE_NAME: &str = ".rusht_history";
 const REPL_HISTORY_SIZE: usize = 100;
+
+macro_rules! hash_map {
+    ($($key:expr => $val:expr),*) => {
+        {
+            let mut hash_map = HashMap::new();
+            $(
+                hash_map.insert($key, $val);
+            )*
+            hash_map
+        }
+    };
+}
 
 struct RushtAccept;
 
@@ -118,9 +132,20 @@ fn history_file_path() -> Option<PathBuf> {
 }
 
 /// Interprets the given `String` and returns the resulting `Token`.
-fn interpret(src: String) -> Result<rusht::tokenize::Token> {
+fn interpret(src: String) -> Result<Token> {
+    let env = hash_map!(
+        "+".to_string() => prelude::add as fn(Vec<Token>) -> Token,
+        "add".to_string() => prelude::add as fn(Vec<Token>) -> Token,
+        "-".to_string() => prelude::sub as fn(Vec<Token>) -> Token,
+        "sub".to_string() => prelude::sub as fn(Vec<Token>) -> Token,
+        "*".to_string() => prelude::mul as fn(Vec<Token>) -> Token,
+        "mul".to_string() => prelude::mul as fn(Vec<Token>) -> Token,
+        "/".to_string() => prelude::div as fn(Vec<Token>) -> Token,
+        "div".to_string() => prelude::div as fn(Vec<Token>) -> Token
+    );
+
     parse(tokenize(src.as_str()))
         .context("failed to parse input")
-        .map(rusht::interpret::interpret)
+        .map(|expr| rusht::interpret::interpret(expr, &env))
         .context("failed to interpret expression")
 }

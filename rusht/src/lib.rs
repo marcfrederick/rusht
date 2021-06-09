@@ -1,5 +1,5 @@
 pub mod tokenize;
 pub mod parse;
 pub mod interpret;
-mod prelude;
+pub mod prelude;
 
