@@ -5,6 +5,9 @@ use anyhow::{Context, Result};
 use clap::{App, Arg};
 use linefeed::{Command, DefaultTerminal, Function, Interface, Prompter, ReadResult, Terminal};
 
+use rusht::parse::parse;
+use rusht::tokenize::tokenize;
+
 const PROGRAM_NAME: &str = "rusht";
 const REPL_PROMPT: &str = "rusht> ";
 const REPL_HISTORY_FILE_NAME: &str = ".rusht_history";
@@ -49,12 +52,12 @@ fn main() -> Result<()> {
 
 /// Interprets the code at the given file path.
 fn interpret_file(file_path: &str) -> Result<()> {
-    let src = std::fs::read_to_string(file_path)
-        .context("failed to read program from file")?;
+    let result = std::fs::read_to_string(file_path)
+        .context("failed to read program from file")
+        .and_then(interpret)
+        .context("failed to interpret file")?;
 
-    let result = interpret(src).context("failed to interpret file")?;
     println!("{:?}", result);
-
     Ok(())
 }
 
@@ -116,7 +119,8 @@ fn history_file_path() -> Option<PathBuf> {
 
 /// Interprets the given `String` and returns the resulting `Token`.
 fn interpret(src: String) -> Result<rusht::tokenize::Token> {
-    let tokens = rusht::tokenize::tokenize(src.as_str());
-    let expr = rusht::parse::parse(tokens).unwrap();
-    Ok(rusht::interpret::interpret(expr))
+    parse(tokenize(src.as_str()))
+        .context("failed to parse input")
+        .map(rusht::interpret::interpret)
+        .context("failed to interpret expression")
 }
