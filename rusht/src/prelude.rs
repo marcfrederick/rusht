@@ -1,6 +1,34 @@
+use std::collections::HashMap;
+
+use crate::Env;
 use crate::tokenize::Token;
 
-pub fn add(args: Vec<Token>) -> Token {
+macro_rules! hash_map {
+    ($($key:expr => $val:expr),*) => {
+        {
+            let mut hash_map = HashMap::new();
+            $(
+                hash_map.insert($key, $val);
+            )*
+            hash_map
+        }
+    };
+}
+
+pub fn get_prelude() -> Env {
+    hash_map!(
+        "+".to_string() => add as fn(Vec<Token>) -> Token,
+        "add".to_string() => add as fn(Vec<Token>) -> Token,
+        "-".to_string() => sub as fn(Vec<Token>) -> Token,
+        "sub".to_string() => sub as fn(Vec<Token>) -> Token,
+        "*".to_string() => mul as fn(Vec<Token>) -> Token,
+        "mul".to_string() => mul as fn(Vec<Token>) -> Token,
+        "/".to_string() => div as fn(Vec<Token>) -> Token,
+        "div".to_string() => div as fn(Vec<Token>) -> Token
+    )
+}
+
+fn add(args: Vec<Token>) -> Token {
     let mut sum = 0.0;
     for x in args {
         match x {
@@ -11,7 +39,7 @@ pub fn add(args: Vec<Token>) -> Token {
     Token::Num(sum)
 }
 
-pub fn sub(args: Vec<Token>) -> Token {
+fn sub(args: Vec<Token>) -> Token {
     let mut sum: f64 = match args[0] {
         Token::Num(n) => n + n,
         _ => panic!("Not a number")
@@ -25,7 +53,7 @@ pub fn sub(args: Vec<Token>) -> Token {
     Token::Num(sum)
 }
 
-pub fn mul(args: Vec<Token>) -> Token {
+fn mul(args: Vec<Token>) -> Token {
     let mut sum = 1.0;
     for x in args {
         match x {
@@ -36,7 +64,7 @@ pub fn mul(args: Vec<Token>) -> Token {
     Token::Num(sum)
 }
 
-pub fn div(args: Vec<Token>) -> Token {
+fn div(args: Vec<Token>) -> Token {
     let mut sum: f64 = match args[0] {
         Token::Num(n) => n * n,
         _ => panic!("Not a number")

@@ -31,23 +31,17 @@ mod test {
 
     #[test]
     fn single_add() {
-        let mut env = HashMap::new();
-        env.insert("+".to_string(), prelude::add as fn(Vec<Token>) -> Token);
-
         let out = interpret(Expr::List(vec![
             Expr::Atom(Token::Ident(String::from("+"))),
             Expr::Atom(Token::Num(4.0)),
             Expr::Atom(Token::Num(5.0)),
             Expr::Atom(Token::Num(15.0)),
-        ]), &env);
+        ]), &prelude::get_prelude());
         assert_eq!(out, Token::Num(24.0))
     }
 
     #[test]
     fn nested_add() {
-        let mut env = HashMap::new();
-        env.insert("+".to_string(), prelude::add as fn(Vec<Token>) -> Token);
-
         let out = interpret(Expr::List(vec![
             Expr::Atom(Token::Ident(String::from("+"))),
             Expr::Atom(Token::Num(4.0)),
@@ -57,7 +51,7 @@ mod test {
                 Expr::Atom(Token::Num(10.0)),
                 Expr::Atom(Token::Num(5.0)),
             ]),
-        ]), &env);
+        ]), &prelude::get_prelude());
         assert_eq!(out, Token::Num(24.0))
     }
 }
