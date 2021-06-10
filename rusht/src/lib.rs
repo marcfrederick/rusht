@@ -9,14 +9,19 @@ mod parse;
 mod interpret;
 mod prelude;
 
-
-#[derive(Error, Debug)]
+#[derive(Error, Debug, Eq, PartialEq)]
 pub enum Error {
-    #[error(transparent)]
-    ParserError(#[from] parse::Error),
+    #[error("token stream ended unexpectedly")]
+    UnexpectedEndOfTokenStream,
+    #[error("encountered an unexpected closing parenthesis")]
+    UnexpectedClosingParenthesis,
+    #[error("missing expected closing parenthesis")]
+    MissingClosingParenthesis,
 }
 
+/// Type resulting either a success (`Ok`) or failure (`Err`)
 pub type Result<T> = std::result::Result<T, Error>;
+
 type Env = HashMap<String, fn(Vec<Token>) -> Token>;
 
 pub struct Interpreter {

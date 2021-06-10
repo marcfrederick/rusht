@@ -1,20 +1,8 @@
 use std::collections::VecDeque;
 
-use thiserror::Error;
-
+use crate::Error;
+use crate::Result;
 use crate::tokenize::Token;
-
-#[derive(Error, Debug, Eq, PartialEq)]
-pub enum Error {
-    #[error("token stream ended unexpectedly")]
-    UnexpectedEndOfTokenStream,
-    #[error("encountered an unexpected closing parenthesis")]
-    UnexpectedClosingParenthesis,
-    #[error("missing expected closing parenthesis")]
-    MissingClosingParenthesis,
-}
-
-pub type Result<T> = std::result::Result<T, Error>;
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum Expr {
