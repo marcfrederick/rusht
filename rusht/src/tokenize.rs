@@ -10,6 +10,18 @@ pub enum Token {
     Bool(bool),
 }
 
+impl std::fmt::Display for Token {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Token::Paren(x) => write!(f, "{}", x),
+            Token::Num(x) => write!(f, "{}", x),
+            Token::Str(x) => write!(f, "{}", x),
+            Token::Ident(x) => write!(f, "{}", x),
+            Token::Bool(x) => write!(f, "{}", x),
+        }
+    }
+}
+
 pub fn tokenize(input: &str) -> Vec<Token> {
     let mut tokens = vec![];
 
@@ -36,7 +48,7 @@ fn take_number(it: &mut Peekable<Chars>) -> Token {
     // instead of just peeking it.
     while let Some(c) = it.peek() {
         if !c.is_numeric() && *c != '.' {
-            break
+            break;
         }
         val.push(it.next().unwrap())
     }
@@ -63,7 +75,7 @@ fn take_ident_or_bool(it: &mut Peekable<Chars>) -> Token {
 
     while let Some(c) = it.peek() {
         if c.is_whitespace() {
-            break
+            break;
         }
         val.push(it.next().unwrap())
     }

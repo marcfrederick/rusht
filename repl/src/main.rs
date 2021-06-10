@@ -57,7 +57,7 @@ fn interpret_file(file_path: &str) -> Result<()> {
         .and_then(interpret)
         .context("failed to interpret file")?;
 
-    println!("{:?}", result);
+    println!("{}", result);
     Ok(())
 }
 
@@ -70,7 +70,7 @@ fn start_repl() -> Result<()> {
         reader.add_history(input.clone());
 
         interpret(input)
-            .map(|result| println!("{:?}", result))
+            .map(|result| println!("{}", result))
             .context("failed to interpret line")?;
     }
 
