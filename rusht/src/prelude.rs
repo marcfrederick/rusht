@@ -3,12 +3,12 @@ use std::collections::HashMap;
 use crate::Env;
 use crate::tokenize::Token;
 
-macro_rules! hash_map {
+macro_rules! prelude {
     ($($key:expr => $val:expr),*) => {
         {
-            let mut hash_map = HashMap::new();
+            let mut hash_map: HashMap<String, fn(Vec<Token>) -> Token> = HashMap::new();
             $(
-                hash_map.insert($key, $val);
+                hash_map.insert($key.to_string(), $val);
             )*
             hash_map
         }
@@ -16,15 +16,15 @@ macro_rules! hash_map {
 }
 
 pub fn get_prelude() -> Env {
-    hash_map!(
-        "+".to_string() => add as fn(Vec<Token>) -> Token,
-        "add".to_string() => add as fn(Vec<Token>) -> Token,
-        "-".to_string() => sub as fn(Vec<Token>) -> Token,
-        "sub".to_string() => sub as fn(Vec<Token>) -> Token,
-        "*".to_string() => mul as fn(Vec<Token>) -> Token,
-        "mul".to_string() => mul as fn(Vec<Token>) -> Token,
-        "/".to_string() => div as fn(Vec<Token>) -> Token,
-        "div".to_string() => div as fn(Vec<Token>) -> Token
+    prelude!(
+        "+" => add,
+        "add" => add,
+        "-" => sub,
+        "sub" => sub,
+        "*" => mul,
+        "mul" => mul,
+        "/" => div,
+        "div" => div
     )
 }
 
