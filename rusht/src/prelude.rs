@@ -164,6 +164,7 @@ mod test {
     test_prelude!(
         add_two => "+"; vec![Num(1.0), Num(2.0)] => Ok(Num(3.0)),
         add_three => "add"; vec![Num(1.0), Num(2.0), Num(2.0)] => Ok(Num(5.0)),
+        add_with_corecion => "+"; vec![Bool(true), Str("5".to_string())] => Ok(Num(6.0)),
         sub => "-"; vec![Num(5.0), Num(2.0)] => Ok(Num(3.0)),
         mul => "*"; vec![Num(5.0), Num(2.0)] => Ok(Num(10.0)),
         div => "/"; vec![Num(5.0), Num(2.0)] => Ok(Num(2.5)),
@@ -171,6 +172,7 @@ mod test {
         and_two => "and"; vec![Bool(true), Bool(true)] => Ok(Bool(true)),
         and_three => "and"; vec![Bool(true), Bool(false), Bool(true)] => Ok(Bool(false)),
         or_two => "or"; vec![Bool(false), Bool(false)] => Ok(Bool(false)),
-        or_three => "or"; vec![Bool(true), Bool(false), Bool(true)] => Ok(Bool(true))
+        or_three => "or"; vec![Bool(true), Bool(false), Bool(true)] => Ok(Bool(true)),
+        coercion_error => "sub"; vec![Bool(true), Str("foo".to_string())] => Err(Error::TypeError)
     );
 }
