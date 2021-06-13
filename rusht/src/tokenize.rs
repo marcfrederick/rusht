@@ -74,7 +74,7 @@ fn take_ident_or_bool(it: &mut Peekable<Chars>) -> Token {
     let mut val = String::new();
 
     while let Some(c) = it.peek() {
-        if c.is_whitespace() {
+        if c.is_whitespace() || *c == '(' || *c == ')' {
             break;
         }
         val.push(it.next().unwrap())
@@ -118,6 +118,13 @@ mod test {
             Str("bar".to_string()),
             Bool(false),
             Num(2.0),
+            Paren(')')
+        ],
+        tokenize_bool_expr: "(= true false)" => vec![
+            Paren('('),
+            Ident("=".to_string()),
+            Bool(true),
+            Bool(false),
             Paren(')')
         ]
     );
