@@ -44,6 +44,15 @@ impl From<Token> for String {
     }
 }
 
+impl From<Token> for bool {
+    fn from(token: Token) -> Self {
+        match token {
+            Token::Bool(b) => b,
+            _ => panic!()
+        }
+    }
+}
+
 /// A key value mapping of function names and the accompanying implementation.
 pub type Prelude = HashMap<String, fn(Vec<Token>) -> Token>;
 
