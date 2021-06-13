@@ -1,8 +1,11 @@
 use std::collections::HashMap;
+use std::process;
 
 use crate::{Error, Result};
 use crate::tokenize::Token;
 
+
+/// Using macros to initialize the hash map in an easier and compact way.
 macro_rules! prelude {
     ($($key:expr => $val:expr),*) => {
         {
@@ -15,12 +18,18 @@ macro_rules! prelude {
     };
 }
 
+
+/// Using macros to pass the needed arguments, the calling calculation/execution and its right Token
+/// Type of the called function.
 macro_rules! reduce {
     ($reducer:expr => $finalizer:expr) => {
         |args| reduce(args, $reducer, $finalizer).unwrap()
     };
 }
 
+/// Checking the passed `token` type - here f64.
+/// And upgraded this type to use also String and Bool for calculation.
+/// /// To be able to have more and handle options with terminal input.
 impl From<Token> for f64 {
     fn from(token: Token) -> Self {
         match token {
@@ -33,6 +42,9 @@ impl From<Token> for f64 {
     }
 }
 
+/// Checking the passed `token` type - here String.
+/// And upgraded this type to use also Num and Bool for strings.
+/// To be able to have more and handle options with terminal input.
 impl From<Token> for String {
     fn from(token: Token) -> Self {
         match token {
@@ -44,6 +56,7 @@ impl From<Token> for String {
     }
 }
 
+/// Checking the passed `token` type - here Bool.
 impl From<Token> for bool {
     fn from(token: Token) -> Self {
         match token {

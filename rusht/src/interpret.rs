@@ -1,6 +1,28 @@
+/// This is our Lisp Interpreter's third step:
+/// Here we pass our built Tree.
+/// If the tree is built up in the correct way, we can easily parse through it and call the using
+/// function with passing the needed arguments.
+/// So here we interpret out terminal input and do the executions.
+
 use crate::parse::Expr;
 use crate::prelude::Prelude;
 use crate::tokenize::Token;
+use crate::Error;
+
+
+/// Interprets the given Types of the Token-Tree using the given `ast`.
+/// Splitting the given ast into the final function and its passed arguments.
+/// The result is putting everything into the Hash Map and calling the function.
+///
+/// # Arguments
+///
+/// * `ast` - Given expressions.
+/// * `env` - Each expression will be passed to given Hash Map.
+///
+/// # Errors
+///
+/// If the vector of needed numbers/arguments for calculation/function is empty, an error type will
+/// be returned.
 
 pub fn interpret(ast: Expr, env: &Prelude) -> Token {
     match ast {
@@ -17,6 +39,7 @@ pub fn interpret(ast: Expr, env: &Prelude) -> Token {
                     let func = env.get(ident).expect("function not found in env");
                     func(args.to_vec())
                 }
+                // _  => Err(Error::MissingNumbers)
                 _ => panic!()
             }
         }
@@ -53,5 +76,12 @@ mod test {
             ]),
         ]), &prelude::get_prelude());
         assert_eq!(out, Token::Num(24.0))
+    }
+
+    fn test_error() {
+        let out = interpret(Expr::List(vec![
+            Expr::Atom(Token::Ident(String::from("*"))),
+        ]), &prelude::get_prelude());
+        assert_eq!(out, Err(Error::MissingNumbers))
     }
 }

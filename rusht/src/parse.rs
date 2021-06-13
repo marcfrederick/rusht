@@ -1,23 +1,54 @@
+/// This is our Lisp Interpreter's second step:
+/// Here we pass our made TokenStream and put it into an AbstractTree.
+/// This tree handles each calculation/execution by split it into the right Ast to go through
+/// an execution in the right way and get a deterministic result in the end.
+
 use std::collections::VecDeque;
 
 use crate::Error;
 use crate::Result;
 use crate::tokenize::Token;
 
+/// Creating an enum with the two data types for our Tree.
+/// * Atom: which identifies all given characters in our TokenStream.
+/// * List: which lists all seperated Asts.
 #[derive(Debug, PartialEq, Clone)]
 pub enum Expr {
     Atom(Token),
     List(Vec<Expr>),
 }
 
+
+/// Here we use a VecDequeue to have the opportunity to easily iterate over our given TokenStream.
+///
+/// # Arguments
+///
+/// * `tokenstream` - Our created Tokenstream from the Tokenizer.
+///
 pub fn parse(token_stream: Vec<Token>) -> Result<Expr> {
     parse_it(&mut VecDeque::from(token_stream))
 }
 
+
+/// Iterates over the given TokenStream and check the input to be able to create the Tree in the
+/// correct and manageable way.
+///
+/// # Arguments
+///
+/// * `tokenstream` - Given expressions via a Queue.
+///
+/// # Errors
+///
+/// If the tokenstream surprisingly ends.
 fn parse_it(token_stream: &mut VecDeque<Token>) -> Result<Expr> {
     let token = token_stream.pop_front()
         .ok_or(Error::UnexpectedEndOfTokenStream)?;
 
+/// To create an Ast for each expression right, we check the braces that separate each execution.
+///
+/// # Errors
+///
+/// If the the expression's brace is missing or started with the closed one.
     match token {
         Token::Paren('(') => {
             let mut l = vec![];

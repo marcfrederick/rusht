@@ -1,6 +1,18 @@
+/// This is our Lisp Interpreter's first step:
+/// Here we pass our terminal input into a TokenStream.
+/// This gives us the opportunity to first of all identify our input's data types.
+/// And secondly put everything together in a vector for passing it to the next step.
+
 use std::iter::Peekable;
 use std::str::Chars;
 
+/// Defining all data types which will be needed for parsing our input to a TokenStream.
+/// Data Types:
+/// * Paren: Used braces.
+/// * Num: Used numbers.
+/// * Str: For our total input in terminal.
+/// * Ident: Used names for functions.
+/// * Boolean: Used for requests.
 #[derive(Debug, Clone, PartialEq)]
 pub enum Token {
     Paren(char),
@@ -10,6 +22,7 @@ pub enum Token {
     Bool(bool),
 }
 
+/// For showing our inputs on terminal.
 impl std::fmt::Display for Token {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
@@ -22,6 +35,10 @@ impl std::fmt::Display for Token {
     }
 }
 
+
+/// Takes the input from our terminal and allocates it to the right function/execution.
+/// So that we have a right identification of each input's type.
+/// Putting the input in a TokenStream for our next step: the parser.
 pub fn tokenize(input: &str) -> Vec<Token> {
     let mut tokens = vec![];
 
