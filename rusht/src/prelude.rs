@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::{Env, Error, Result};
+use crate::{Error, Result};
 use crate::tokenize::Token;
 
 macro_rules! prelude {
@@ -15,26 +15,49 @@ macro_rules! prelude {
     };
 }
 
-pub fn get_prelude() -> Env {
-    prelude!(
-        "+" => add,
-        "add" => add,
-        "-" => sub,
-        "sub" => sub,
-        "*" => mul,
-        "mul" => mul,
-        "/" => div,
-        "div" => div
-    )
+macro_rules! reduce {
+    ($reducer:expr => $finalizer:expr) => {
+        |args| reduce(args, $reducer, $finalizer).unwrap()
+    };
 }
 
 impl From<Token> for f64 {
     fn from(token: Token) -> Self {
         match token {
             Token::Num(n) => n,
+            Token::Bool(true) => 1.0,
+            Token::Bool(false) => 0.0,
+            Token::Str(s) if s.parse::<f64>().is_ok() => s.parse().unwrap(),
             _ => panic!()
         }
     }
+}
+
+impl From<Token> for String {
+    fn from(token: Token) -> Self {
+        match token {
+            Token::Str(s) => s,
+            Token::Bool(b) => b.to_string(),
+            Token::Num(n) => n.to_string(),
+            _ => panic!()
+        }
+    }
+}
+
+pub type Prelude = HashMap<String, fn(Vec<Token>) -> Token>;
+
+pub fn get_prelude() -> Prelude {
+    prelude!(
+        "+" => reduce!(|a, b| a + b => Token::Num),
+        "add" => reduce!(|a, b| a + b => Token::Num),
+        "-" => reduce!(|a, b| a - b => Token::Num),
+        "sub" => reduce!(|a, b| a - b => Token::Num),
+        "*" => reduce!(|a, b| a * b => Token::Num),
+        "mul" => reduce!(|a, b| a * b => Token::Num),
+        "/" => reduce!(|a, b| a / b => Token::Num),
+        "div" => reduce!(|a, b| a / b => Token::Num),
+        "concat" => reduce!(|a, b| format!("{}{}", a, b) => Token::Str)
+    )
 }
 
 fn reduce<T, F, G>(args: Vec<Token>, reducer: F, finalizer: G) -> Result<Token>
@@ -49,48 +72,4 @@ fn reduce<T, F, G>(args: Vec<Token>, reducer: F, finalizer: G) -> Result<Token>
         .reduce(reducer)
         .ok_or(Error::InvalidNumberOfArguments)
         .map(finalizer)
-}
-
-fn add(args: Vec<Token>) -> Token {
-    reduce(args, |a, b| a + b, Token::Num).unwrap()
-}
-
-fn sub(args: Vec<Token>) -> Token {
-    reduce(args, |a, b| a - b, Token::Num).unwrap()
-}
-
-fn mul(args: Vec<Token>) -> Token {
-    reduce(args, |a, b| a * b, Token::Num).unwrap()
-}
-
-fn div(args: Vec<Token>) -> Token {
-    reduce(args, |a, b| a / b, Token::Num).unwrap()
-}
-
-#[cfg(test)]
-mod test {
-    use super::*;
-    use super::Token::*;
-
-    macro_rules! test_fn {
-        ($($func:ident - $name:ident: $input:expr => $expected:expr),*) => {
-            $(
-                #[test]
-                fn $name() {
-                    assert_eq!($func($input), $expected);
-                }
-            )*
-        };
-    }
-
-    test_fn! {
-        add - add_two: vec![Num(1.0), Num(3.0)] => Num(4.0),
-        add - add_three: vec![Num(1.0), Num(3.0), Num(10.0)] => Num(14.0),
-        sub - sub_two: vec![Num(1.0), Num(3.0)] => Num(-2.0),
-        sub - sub_four: vec![Num(1.0), Num(3.0), Num(2.0), Num(5.0)] => Num(-9.0),
-        mul - mul_two: vec![Num(2.0), Num(3.0)] => Num(6.0),
-        mul - mul_three: vec![Num(1.0), Num(3.0), Num(10.0)] => Num(30.0),
-        div - div_two: vec![Num(3.0), Num(2.0)] => Num(1.5),
-        div - div_three: vec![Num(3.0), Num(2.0), Num(0.5)] => Num(3.0)
-    }
 }

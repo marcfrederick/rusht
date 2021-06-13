@@ -1,8 +1,8 @@
-use crate::Env;
 use crate::parse::Expr;
+use crate::prelude::Prelude;
 use crate::tokenize::Token;
 
-pub fn interpret(ast: Expr, env: &Env) -> Token {
+pub fn interpret(ast: Expr, env: &Prelude) -> Token {
     match ast {
         Expr::Atom(token) => token,
         Expr::List(tokens) => {

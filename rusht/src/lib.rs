@@ -1,7 +1,6 @@
-use std::collections::HashMap;
-
 use thiserror::Error;
 
+use crate::prelude::Prelude;
 pub use crate::tokenize::Token;
 
 mod tokenize;
@@ -26,10 +25,8 @@ pub enum Error {
 /// Type resulting either a success (`Ok`) or failure (`Err`)
 pub type Result<T> = std::result::Result<T, Error>;
 
-type Env = HashMap<String, fn(Vec<Token>) -> Token>;
-
 pub struct Interpreter {
-    env: Env,
+    env: Prelude,
 }
 
 impl Interpreter {
