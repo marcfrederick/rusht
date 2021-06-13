@@ -44,7 +44,7 @@ pub fn interpret(ast: Expr, env: &Prelude) -> Token {
                         _ => {}
                     }*/
                     let func = env.get(ident).expect("function not found in env");
-                    func(args.to_vec())
+                    func(args.to_vec()).expect("here should be error handling")
                 }
                 _  => Err(Error::UnreadableTokens)
             }
