@@ -46,8 +46,7 @@ pub fn interpret(ast: Expr, env: &Prelude) -> Token {
                     let func = env.get(ident).expect("function not found in env");
                     func(args.to_vec())
                 }
-                // _  => Err(Error::MissingNumbers)
-                _ => panic!()
+                _  => Err(Error::UnreadableTokens)
             }
         }
     }

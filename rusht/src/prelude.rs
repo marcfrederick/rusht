@@ -46,7 +46,7 @@ impl From<Token> for f64 {
             Token::Bool(true) => 1.0,
             Token::Bool(false) => 0.0,
             Token::Str(s) if s.parse::<f64>().is_ok() => s.parse().unwrap(),
-            _ => panic!()
+            _ => Err(Error::TypeError)
         }
     }
 }
@@ -60,7 +60,7 @@ impl From<Token> for String {
             Token::Str(s) => s,
             Token::Bool(b) => b.to_string(),
             Token::Num(n) => n.to_string(),
-            _ => panic!()
+            _ => Err(Error::TypeError)
         }
     }
 }
@@ -74,7 +74,7 @@ impl From<Token> for bool {
             Token::Num(_) => true,
             Token::Str(s) if ["true", "1"].contains(&s.as_str()) => true,
             Token::Str(s) if ["false", "0", ""].contains(&s.as_str()) => false,
-            _ => panic!()
+            _ => Err(Error::TypeError)
         }
     }
 }
