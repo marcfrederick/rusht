@@ -48,6 +48,10 @@ impl From<Token> for bool {
     fn from(token: Token) -> Self {
         match token {
             Token::Bool(b) => b,
+            Token::Num(x) if x == 0.0 => false,
+            Token::Num(_) => true,
+            Token::Str(s) if ["true", "1"].contains(&s.as_str()) => true,
+            Token::Str(s) if ["false", "0", ""].contains(&s.as_str()) => false,
             _ => panic!()
         }
     }
@@ -67,7 +71,9 @@ pub fn get_prelude() -> Prelude {
         "mul" => reduce!(|a, b| a * b => Token::Num),
         "/" => reduce!(|a, b| a / b => Token::Num),
         "div" => reduce!(|a, b| a / b => Token::Num),
-        "concat" => reduce!(|a, b| format!("{}{}", a, b) => Token::Str)
+        "concat" => reduce!(|a, b| format!("{}{}", a, b) => Token::Str),
+        "and" => reduce!(|a, b| a && b => Token::Bool),
+        "or" => reduce!(|a, b| a || b => Token::Bool)
     )
 }
 
