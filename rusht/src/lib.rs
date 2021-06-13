@@ -17,6 +17,10 @@ pub enum Error {
     UnexpectedClosingParenthesis,
     #[error("missing expected closing parenthesis")]
     MissingClosingParenthesis,
+    #[error("error")]
+    TypeError,
+    #[error("invalid number of arguments passed")]
+    InvalidNumberOfArguments,
 }
 
 /// Type resulting either a success (`Ok`) or failure (`Err`)

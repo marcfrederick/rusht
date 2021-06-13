@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::Env;
+use crate::{Env, Error, Result};
 use crate::tokenize::Token;
 
 macro_rules! prelude {
@@ -28,54 +28,43 @@ pub fn get_prelude() -> Env {
     )
 }
 
-fn add(args: Vec<Token>) -> Token {
-    let mut sum = 0.0;
-    for x in args {
-        match x {
-            Token::Num(n) => sum += n,
-            _ => panic!("Not a number")
+impl From<Token> for f64 {
+    fn from(token: Token) -> Self {
+        match token {
+            Token::Num(n) => n,
+            _ => panic!()
         }
     }
-    Token::Num(sum)
+}
+
+fn reduce<T, F, G>(args: Vec<Token>, reducer: F, finalizer: G) -> Result<Token>
+    where
+        T: From<Token>,
+        F: Fn(T, T) -> T,
+        G: Fn(T) -> Token
+{
+    args
+        .into_iter()
+        .map(|x| x.into())
+        .reduce(reducer)
+        .ok_or(Error::InvalidNumberOfArguments)
+        .map(finalizer)
+}
+
+fn add(args: Vec<Token>) -> Token {
+    reduce(args, |a, b| a + b, Token::Num).unwrap()
 }
 
 fn sub(args: Vec<Token>) -> Token {
-    let mut sum: f64 = match args[0] {
-        Token::Num(n) => n + n,
-        _ => panic!("Not a number")
-    };
-    for x in args {
-        match x {
-            Token::Num(n) => sum -= n,
-            _ => panic!("Not a number")
-        }
-    }
-    Token::Num(sum)
+    reduce(args, |a, b| a - b, Token::Num).unwrap()
 }
 
 fn mul(args: Vec<Token>) -> Token {
-    let mut sum = 1.0;
-    for x in args {
-        match x {
-            Token::Num(n) => sum *= n,
-            _ => panic!("Not a number")
-        }
-    }
-    Token::Num(sum)
+    reduce(args, |a, b| a * b, Token::Num).unwrap()
 }
 
 fn div(args: Vec<Token>) -> Token {
-    let mut sum: f64 = match args[0] {
-        Token::Num(n) => n * n,
-        _ => panic!("Not a number")
-    };
-    for x in args {
-        match x {
-            Token::Num(n) => sum /= n,
-            _ => panic!("Not a number")
-        }
-    }
-    Token::Num(sum)
+    reduce(args, |a, b| a / b, Token::Num).unwrap()
 }
 
 #[cfg(test)]
