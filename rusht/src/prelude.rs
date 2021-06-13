@@ -112,3 +112,35 @@ fn reduce<T, F, G>(args: Vec<Token>, reducer: F, finalizer: G) -> Result<Token>
         .ok_or(Error::InvalidNumberOfArguments)
         .map(finalizer)
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use super::Token::*;
+
+    macro_rules! test_prelude {
+        ($($name:ident => $key:expr; $input:expr => $expected:expr),*) => {
+            $(
+                #[test]
+                fn $name() {
+                    let prelude = get_prelude();
+                    let actual = prelude.get($key).unwrap()($input);
+                    assert_eq!(actual, $expected);
+                }
+            )*
+        };
+    }
+
+    test_prelude!(
+        add_two => "+"; vec![Num(1.0), Num(2.0)] => Num(3.0),
+        add_three => "add"; vec![Num(1.0), Num(2.0), Num(2.0)] => Num(5.0),
+        sub => "-"; vec![Num(5.0), Num(2.0)] => Num(3.0),
+        mul => "*"; vec![Num(5.0), Num(2.0)] => Num(10.0),
+        div => "/"; vec![Num(5.0), Num(2.0)] => Num(2.5),
+        concat => "concat"; vec![Str("foo".to_string()), Str("bar".to_string())] => Str("foobar".to_string()),
+        and_two => "and"; vec![Bool(true), Bool(true)] => Bool(true),
+        and_three => "and"; vec![Bool(true), Bool(false), Bool(true)] => Bool(false),
+        or_two => "or"; vec![Bool(false), Bool(false)] => Bool(false),
+        or_three => "or"; vec![Bool(true), Bool(false), Bool(true)] => Bool(true)
+    );
+}
