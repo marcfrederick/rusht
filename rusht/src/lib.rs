@@ -1,12 +1,13 @@
 use thiserror::Error;
 
 use crate::prelude::Prelude;
-pub use crate::tokenize::Token;
+pub use crate::token::Token;
 
 mod tokenize;
 mod parse;
 mod interpret;
 mod prelude;
+mod token;
 
 
 /// Using an enum for Error Handling to call the right message when an error occurs and so easily

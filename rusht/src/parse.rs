@@ -7,7 +7,7 @@ use std::collections::VecDeque;
 
 use crate::Error;
 use crate::Result;
-use crate::tokenize::Token;
+use crate::token::Token;
 
 /// Creating an enum with the two data types for our Tree.
 /// * Atom: which identifies all given characters in our TokenStream.

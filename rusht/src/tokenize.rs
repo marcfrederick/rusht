@@ -6,34 +6,7 @@
 use std::iter::Peekable;
 use std::str::Chars;
 
-/// Defining all data types which will be needed for parsing our input to a TokenStream.
-/// Data Types:
-/// * Paren: Used braces.
-/// * Num: Used numbers.
-/// * Str: For our total input in terminal.
-/// * Ident: Used names for functions.
-/// * Boolean: Used for requests.
-#[derive(Debug, Clone, PartialEq)]
-pub enum Token {
-    Paren(char),
-    Num(f64),
-    Str(String),
-    Ident(String),
-    Bool(bool),
-}
-
-/// For showing our inputs on terminal.
-impl std::fmt::Display for Token {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Token::Paren(x) => write!(f, "{}", x),
-            Token::Num(x) => write!(f, "{}", x),
-            Token::Str(x) => write!(f, "{}", x),
-            Token::Ident(x) => write!(f, "{}", x),
-            Token::Bool(x) => write!(f, "{}", x),
-        }
-    }
-}
+use crate::token::Token;
 
 
 /// Takes the input from our terminal and allocates it to the right function/execution.

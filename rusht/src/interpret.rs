@@ -24,7 +24,6 @@ use std::process;
 ///
 /// If the vector of needed numbers/arguments for calculation/function is empty, an error type will
 /// be returned.
-
 pub fn interpret(ast: Expr, env: &Prelude) -> Token {
     match ast {
         Expr::Atom(token) => token,

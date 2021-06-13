@@ -3,7 +3,7 @@ use std::convert::{TryFrom, TryInto};
 // use std::process;
 
 use crate::{Error, Result};
-use crate::tokenize::Token;
+use crate::token::Token;
 
 
 /// Using macros to initialize the hash map in an easier and compact way.
@@ -35,55 +35,6 @@ macro_rules! exitprogram {
     };
 }
 */
-
-impl TryFrom<Token> for f64 {
-    type Error = Error;
-
-    fn try_from(token: Token) -> Result<Self> {
-        match token {
-            Token::Num(n) => n,
-            Token::Bool(true) => 1.0,
-            Token::Bool(false) => 0.0,
-            Token::Str(s) if s.parse::<f64>().is_ok() => s.parse().unwrap(),
-            _ => panic!()
-        }
-    }
-}
-
-impl TryFrom<Token> for String {
-    type Error = Error;
-
-    fn try_from(token: Token) -> Result<Self> {
-        match token {
-            Token::Str(s) => s,
-            Token::Bool(b) => b.to_string(),
-            Token::Num(n) => n.to_string(),
-            _ => panic!()
-        }
-    }
-}
-
-impl TryFrom<Token> for bool {
-    type Error = Error;
-
-    fn try_from(token: Token) -> Result<Self> {
-        match token {
-            Token::Bool(b) => b,
-            Token::Num(x) if x == 0.0 => false,
-            Token::Num(_) => true,
-            Token::Str(s) if ["true", "1"].contains(&s.as_str()) => true,
-            Token::Str(s) if ["false", "0", ""].contains(&s.as_str()) => false,
-            _ => panic!()
-        }
-    }
-}
-
-/*
-pub fn exit_func() -> ! {
-    process::exit(1);
-}
-
- */
 
 /// A key value mapping of function names and the accompanying implementation.
 pub type Prelude = HashMap<String, fn(Vec<Token>) -> Result<Token>>;
