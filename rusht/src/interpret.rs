@@ -8,6 +8,7 @@ use crate::parse::Expr;
 use crate::prelude::Prelude;
 use crate::tokenize::Token;
 use crate::Error;
+use std::process;
 
 
 /// Interprets the given Types of the Token-Tree using the given `ast`.
@@ -36,6 +37,12 @@ pub fn interpret(ast: Expr, env: &Prelude) -> Token {
             match func.get(0).unwrap() {
                 Token::Ident(ident) => {
                     let ident = (*ident).as_str();
+                    /*match ident {
+                        "def" => Some(Prelude::def_func(args.to_vec())),
+                        "if" => Some(Prelude::if_func(args.to_vec())),
+                        "exit" => Prelude::exit_func,
+                        _ => {}
+                    }*/
                     let func = env.get(ident).expect("function not found in env");
                     func(args.to_vec())
                 }

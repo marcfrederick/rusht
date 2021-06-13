@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use std::process;
+// use std::process;
 
 use crate::{Error, Result};
 use crate::tokenize::Token;
@@ -26,6 +26,15 @@ macro_rules! reduce {
         |args| reduce(args, $reducer, $finalizer).unwrap()
     };
 }
+
+/*
+macro_rules! exitprogram {
+    ($exiter:expr => $final:expr) => {
+        reduce($exiter, $final).unwrap()
+    };
+}
+ */
+
 
 /// Checking the passed `token` type - here f64.
 /// And upgraded this type to use also String and Bool for calculation.
@@ -61,10 +70,21 @@ impl From<Token> for bool {
     fn from(token: Token) -> Self {
         match token {
             Token::Bool(b) => b,
+            Token::Num(x) if x == 0.0 => false,
+            Token::Num(_) => true,
+            Token::Str(s) if ["true", "1"].contains(&s.as_str()) => true,
+            Token::Str(s) if ["false", "0", ""].contains(&s.as_str()) => false,
             _ => panic!()
         }
     }
 }
+
+/*
+pub fn exit_func() -> ! {
+    process::exit(1);
+}
+
+ */
 
 /// A key value mapping of function names and the accompanying implementation.
 pub type Prelude = HashMap<String, fn(Vec<Token>) -> Token>;
@@ -81,6 +101,7 @@ pub fn get_prelude() -> Prelude {
         "/" => reduce!(|a, b| a / b => Token::Num),
         "div" => reduce!(|a, b| a / b => Token::Num),
         "concat" => reduce!(|a, b| format!("{}{}", a, b) => Token::Str)
+        //"exit()" => exitprogram!(exit_func => Token::Str)
     )
 }
 
@@ -118,4 +139,36 @@ fn reduce<T, F, G>(args: Vec<Token>, reducer: F, finalizer: G) -> Result<Token>
         .reduce(reducer)
         .ok_or(Error::InvalidNumberOfArguments)
         .map(finalizer)
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use super::Token::*;
+
+    macro_rules! test_prelude {
+        ($($name:ident => $key:expr; $input:expr => $expected:expr),*) => {
+            $(
+                #[test]
+                fn $name() {
+                    let prelude = get_prelude();
+                    let actual = prelude.get($key).unwrap()($input);
+                    assert_eq!(actual, $expected);
+                }
+            )*
+        };
+    }
+
+    test_prelude!(
+        add_two => "+"; vec![Num(1.0), Num(2.0)] => Num(3.0),
+        add_three => "add"; vec![Num(1.0), Num(2.0), Num(2.0)] => Num(5.0),
+        sub => "-"; vec![Num(5.0), Num(2.0)] => Num(3.0),
+        mul => "*"; vec![Num(5.0), Num(2.0)] => Num(10.0),
+        div => "/"; vec![Num(5.0), Num(2.0)] => Num(2.5),
+        concat => "concat"; vec![Str("foo".to_string()), Str("bar".to_string())] => Str("foobar".to_string()),
+        and_two => "and"; vec![Bool(true), Bool(true)] => Bool(true),
+        and_three => "and"; vec![Bool(true), Bool(false), Bool(true)] => Bool(false),
+        or_two => "or"; vec![Bool(false), Bool(false)] => Bool(false),
+        or_three => "or"; vec![Bool(true), Bool(false), Bool(true)] => Bool(true)
+    );
 }
