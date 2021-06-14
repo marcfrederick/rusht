@@ -161,10 +161,10 @@ mod test {
         and_three => "and"; vec![Bool(true), Bool(false), Bool(true)] => Ok(Bool(false)),
         or_two => "or"; vec![Bool(false), Bool(false)] => Ok(Bool(false)),
         or_three => "or"; vec![Bool(true), Bool(false), Bool(true)] => Ok(Bool(true)),
-        coercion_error => "sub"; vec![Bool(true), Str("foo".to_string())] => Err(Error::TypeError),
+        coercion_error => "sub"; vec![Bool(true), Str("foo".to_string())] => Err(Error::CouldNotCoerceType),
         if_true => "if"; vec![Bool(true), Num(1.0), Num(2.0)] => Ok(Num(1.0)),
         if_false => "if"; vec![Bool(false), Num(1.0), Num(2.0)] => Ok(Num(2.0)),
-        if_no_conditional => "if"; vec![Str("foo".to_string()), Num(1.0), Num(2.0)] => Err(Error::TypeError),
+        if_no_conditional => "if"; vec![Str("foo".to_string()), Num(1.0), Num(2.0)] => Err(Error::CouldNotCoerceType),
         if_too_few_args => "if"; vec![Bool(true), Num(1.0)] => Err(Error::InvalidNumberOfArguments),
         if_too_many_args => "if"; vec![Bool(true), Num(1.0), Num(2.0), Num(3.0)] => Err(Error::InvalidNumberOfArguments)
     );

@@ -32,8 +32,8 @@ impl TryFrom<Token> for f64 {
             Token::Num(n) => Ok(n),
             Token::Bool(true) => Ok(1.0),
             Token::Bool(false) => Ok(0.0),
-            Token::Str(s) if s.trim().parse::<f64>().is_ok() => Ok(s.trim().parse().unwrap()),
-            _ => Err(Error::TypeError)
+            Token::Str(s) => s.trim().parse().map_err(|_| Error::CouldNotCoerceType),
+            _ => Err(Error::CouldNotCoerceType)
         }
     }
 }
@@ -46,7 +46,7 @@ impl TryFrom<Token> for String {
             Token::Str(s) => Ok(s),
             Token::Bool(b) => Ok(b.to_string()),
             Token::Num(n) => Ok(n.to_string()),
-            _ => Err(Error::TypeError)
+            _ => Err(Error::CouldNotCoerceType)
         }
     }
 }
@@ -61,7 +61,7 @@ impl TryFrom<Token> for bool {
             Token::Num(_) => Ok(true),
             Token::Str(s) if ["true", "1"].contains(&s.as_str()) => Ok(true),
             Token::Str(s) if ["false", "0", ""].contains(&s.as_str()) => Ok(false),
-            _ => Err(Error::TypeError)
+            _ => Err(Error::CouldNotCoerceType)
         }
     }
 }
