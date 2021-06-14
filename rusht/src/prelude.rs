@@ -1,10 +1,10 @@
 use std::collections::HashMap;
 use std::convert::{TryFrom, TryInto};
-// use std::process;
 
 use crate::{Error, Result};
 use crate::token::Token;
 
+// use std::process;
 
 /// Using macros to initialize the hash map in an easier and compact way.
 macro_rules! prelude {
@@ -16,15 +16,6 @@ macro_rules! prelude {
             )*
             hash_map
         }
-    };
-}
-
-
-/// Using macros to pass the needed arguments, the calling calculation/execution and its right Token
-/// Type of the called function.
-macro_rules! reduce {
-    ($reducer:expr => $finalizer:expr) => {
-        |args| reduce(args, $reducer, $finalizer)
     };
 }
 
@@ -42,17 +33,17 @@ pub type Prelude = HashMap<String, fn(Vec<Token>) -> Result<Token>>;
 /// Returns a prelude (standard library) of often used functions.
 pub fn get_prelude() -> Prelude {
     prelude!(
-        "+" => reduce!(|a, b| a + b => Token::Num),
-        "add" => reduce!(|a, b| a + b => Token::Num),
-        "-" => reduce!(|a, b| a - b => Token::Num),
-        "sub" => reduce!(|a, b| a - b => Token::Num),
-        "*" => reduce!(|a, b| a * b => Token::Num),
-        "mul" => reduce!(|a, b| a * b => Token::Num),
-        "/" => reduce!(|a, b| a / b => Token::Num),
-        "div" => reduce!(|a, b| a / b => Token::Num),
-        "concat" => reduce!(|a, b| format!("{}{}", a, b) => Token::Str),
-        "and" => reduce!(|a, b| a && b => Token::Bool),
-        "or" => reduce!(|a, b| a || b => Token::Bool)
+        "+" => |args| reduce(args, |a, b| a + b, Token::Num),
+        "add" => |args| reduce(args, |a, b| a + b, Token::Num),
+        "-" => |args| reduce(args, |a, b| a - b, Token::Num),
+        "sub" => |args| reduce(args, |a, b| a - b, Token::Num),
+        "*" => |args| reduce(args, |a, b| a * b, Token::Num),
+        "mul" => |args| reduce(args, |a, b| a * b, Token::Num),
+        "/" => |args| reduce(args, |a, b| a / b, Token::Num),
+        "div" => |args| reduce(args, |a, b| a / b, Token::Num),
+        "concat" => |args| reduce(args, |a, b| format!("{}{}", a, b), Token::Str),
+        "and" => |args| reduce(args, |a, b| a && b, Token::Bool),
+        "or" => |args| reduce(args, |a, b| a || b, Token::Bool)
     )
 }
 
