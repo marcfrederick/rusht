@@ -28,6 +28,8 @@ pub enum Error {
     FunctionNotDefined(String),
     #[error("missing tokens or cannot be read")]
     UnreadableTokens,
+    #[error("missing tokens for execution")]
+    MissingTokens,
 }
 
 /// Type resulting either a success (`Ok`) or failure (`Err`)

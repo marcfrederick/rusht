@@ -34,10 +34,6 @@ pub fn interpret(ast: Expr, env: &Prelude) -> Result<Token> {
             match func.get(0).ok_or(Error::UnreadableTokens)? {
                 Token::Ident(ident) => {
                     let ident = (*ident).as_str();
-                    /*match ident {
-                        "def" => Some(Prelude::def_func(args.to_vec())),
-                        _ => {}
-                    }*/
                     let func = env.get(ident)
                         .ok_or_else(|| Error::FunctionNotDefined(ident.to_string()))?;
                     func(args.to_vec())

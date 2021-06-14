@@ -58,6 +58,33 @@ fn parse_it(token_stream: &mut VecDeque<Token>) -> Result<Expr> {
     }
 }
 
+/// Update: nothing is printing
+/// 1. Idee: Abfrage mit while -> ist das Ende vom TokenStream erreicht
+/// dann mit if-else abfragen, dass get(0) und get(last) nicht ')' sind.
+            /*
+            while length != 0
+            {
+                if (*token_stream.get(0).ok_or(Error::MissingTokens)? != Token::Paren(')')) || (*token_stream.get(length - 1).ok_or(Error::MissingClosingParenthesis)? != Token::Paren(')'))
+                {
+                    l.push(parse_it(token_stream)?);
+                }
+                length -= 1;
+            }
+            Ok(Expr::List(l))
+             */
+
+/// Update: InvalidNumberOfArguments
+/// 2. Idee: Abfrage direkt mit if-else
+            /*
+            if (*token_stream.get(0).ok_or(Error::MissingTokens)? != Token::Paren(')')) || (*token_stream.get(length).ok_or(Error::MissingClosingParenthesis)? != Token::Paren(')'))
+            {
+                l.push(parse_it(token_stream)?);
+                length -= 1;
+            }
+            Ok(Expr::List(l))
+             */
+
+
 #[cfg(test)]
 mod test {
     use super::*;
