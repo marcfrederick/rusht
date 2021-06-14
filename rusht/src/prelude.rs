@@ -4,6 +4,7 @@ use std::io::stdin;
 
 use crate::{Error, Result};
 use crate::token::Token;
+use thiserror::private::DisplayAsDisplay;
 
 /// Using macros to initialize the hash map in an easier and compact way.
 macro_rules! prelude {
@@ -25,19 +26,17 @@ pub type Prelude = HashMap<String, fn(Vec<Token>) -> Result<Token>>;
 pub fn get_prelude() -> Prelude {
     prelude!(
         "+" => |args| reduce(args, |a, b| a + b, Token::Num),
-        "add" => |args| reduce(args, |a, b| a + b, Token::Num),
         "-" => |args| reduce(args, |a, b| a - b, Token::Num),
-        "sub" => |args| reduce(args, |a, b| a - b, Token::Num),
         "*" => |args| reduce(args, |a, b| a * b, Token::Num),
-        "mul" => |args| reduce(args, |a, b| a * b, Token::Num),
         "/" => |args| reduce(args, |a, b| a / b, Token::Num),
-        "div" => |args| reduce(args, |a, b| a / b, Token::Num),
+        "%" => |args| reduce(args, |a, b| a % b, Token::Num),
         "concat" => |args| reduce(args, |a, b| format!("{}{}", a, b), Token::Str),
         "and" => |args| reduce(args, |a, b| a && b, Token::Bool),
         "or" => |args| reduce(args, |a, b| a || b, Token::Bool),
         "exit" => rusht_exit,
         "if" => rusht_if,
-        "read" => rusht_read
+        "read" => rusht_read,
+        "def" => rusht_varialbe_define
     )
 }
 
@@ -62,6 +61,17 @@ fn rusht_if(args: Vec<Token>) -> Result<Token> {
     let condition = args.get(0).unwrap().clone().try_into()?;
     let out_index = if condition { 1 } else { 2 };
     Ok(args.get(out_index).unwrap().clone())
+}
+
+
+///
+fn rusht_varialbe_define(args: Vec<Token>) -> Result<Token> {
+    if args.len() != 2 {
+        return Err(Error::InvalidNumberOfArguments);
+    }
+    let num = args.get(1).unwrap().clone();
+    let value = args.get(0).insert(*num).clone();
+    Ok(Token::Num(num))
 }
 
 /// Reads a line from the console.
