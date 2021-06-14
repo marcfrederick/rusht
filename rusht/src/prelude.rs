@@ -4,8 +4,6 @@ use std::convert::{TryFrom, TryInto};
 use crate::{Error, Result};
 use crate::token::Token;
 
-// use std::process;
-
 /// Using macros to initialize the hash map in an easier and compact way.
 macro_rules! prelude {
     ($($key:expr => $val:expr),*) => {
@@ -18,14 +16,6 @@ macro_rules! prelude {
         }
     };
 }
-
-/*
-macro_rules! exitprogram {
-    ($exiter:expr => $final:expr) => {
-        reduce($exiter, $final).unwrap()
-    };
-}
-*/
 
 /// A key value mapping of function names and the accompanying implementation.
 pub type Prelude = HashMap<String, fn(Vec<Token>) -> Result<Token>>;
@@ -43,8 +33,29 @@ pub fn get_prelude() -> Prelude {
         "div" => |args| reduce(args, |a, b| a / b, Token::Num),
         "concat" => |args| reduce(args, |a, b| format!("{}{}", a, b), Token::Str),
         "and" => |args| reduce(args, |a, b| a && b, Token::Bool),
-        "or" => |args| reduce(args, |a, b| a || b, Token::Bool)
+        "or" => |args| reduce(args, |a, b| a || b, Token::Bool),
+        "exit" => |args| exit(args)
     )
+}
+
+/// Exits the current process with a given exit code or `0`.
+///
+/// # Arguments
+///
+/// * `args` - A consisting of either 0 or 1 elements.
+///
+/// # Errors
+///
+/// If the vector of args has a size greater than 1.
+fn exit(args: Vec<Token>) -> Result<Token> {
+    if args.len() > 1 {
+        return Err(Error::InvalidNumberOfArguments);
+    }
+
+    let status_code = args.get(0)
+        .map(|token| token.clone().try_into())
+        .unwrap_or(Ok(0.0))?;
+    std::process::exit(status_code as i32);
 }
 
 /// Reduces the given vector of `Token`s  using the given `reducer` function.

@@ -36,7 +36,6 @@ pub fn interpret(ast: Expr, env: &Prelude) -> Token {
                     /*match ident {
                         "def" => Some(Prelude::def_func(args.to_vec())),
                         "if" => Some(Prelude::if_func(args.to_vec())),
-                        "exit" => Prelude::exit_func,
                         _ => {}
                     }*/
                     let func = env.get(ident).expect("function not found in env");
