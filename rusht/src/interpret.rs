@@ -1,3 +1,4 @@
+use crate::{Error, Result};
 /// This is our Lisp Interpreter's third step:
 /// Here we pass our built Tree.
 /// If the tree is built up in the correct way, we can easily parse through it and call the using
@@ -21,27 +22,27 @@ use crate::token::Token;
 ///
 /// If the vector of needed numbers/arguments for calculation/function is empty, an error type will
 /// be returned.
-pub fn interpret(ast: Expr, env: &Prelude) -> Token {
+pub fn interpret(ast: Expr, env: &Prelude) -> Result<Token> {
     match ast {
-        Expr::Atom(token) => token,
+        Expr::Atom(token) => Ok(token),
         Expr::List(tokens) => {
             let tokens = tokens.iter()
                 .map(|t| interpret(t.clone(), env))
-                .collect::<Vec<_>>();
+                .collect::<Result<Vec<_>>>()?;
 
             let (func, args) = tokens.split_at(1);
-            match func.get(0).unwrap() {
+            match func.get(0).ok_or(Error::UnreadableTokens)? {
                 Token::Ident(ident) => {
                     let ident = (*ident).as_str();
                     /*match ident {
                         "def" => Some(Prelude::def_func(args.to_vec())),
-                        "if" => Some(Prelude::if_func(args.to_vec())),
                         _ => {}
                     }*/
-                    let func = env.get(ident).expect("function not found in env");
-                    func(args.to_vec()).expect("here should be error handling")
+                    let func = env.get(ident)
+                        .ok_or(Error::FunctionNotDefined(ident.to_string()))?;
+                    func(args.to_vec())
                 }
-                _ => panic!() //Err(Error::UnreadableTokens)
+                _ => Err(Error::UnreadableTokens)
             }
         }
     }
@@ -61,7 +62,7 @@ mod test {
             Expr::Atom(Token::Num(5.0)),
             Expr::Atom(Token::Num(15.0)),
         ]), &prelude::get_prelude());
-        assert_eq!(out, Token::Num(24.0))
+        assert_eq!(out, Ok(Token::Num(24.0)))
     }
 
     #[test]
@@ -76,7 +77,7 @@ mod test {
                 Expr::Atom(Token::Num(5.0)),
             ]),
         ]), &prelude::get_prelude());
-        assert_eq!(out, Token::Num(24.0))
+        assert_eq!(out, Ok(Token::Num(24.0)))
     }
 
     #[test]

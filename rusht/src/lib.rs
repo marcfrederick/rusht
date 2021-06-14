@@ -24,8 +24,8 @@ pub enum Error {
     TypeError,
     #[error("invalid number of arguments passed")]
     InvalidNumberOfArguments,
-    #[error("missing numbers for calculation")]
-    MissingNumbers,
+    #[error("function `{0}` is not defined")]
+    FunctionNotDefined(String),
     #[error("missing tokens or cannot be read")]
     UnreadableTokens,
 }
@@ -47,16 +47,16 @@ impl Interpreter {
         Interpreter { env: prelude::get_prelude() }
     }
 
-/// This function is the `heart` so that our Lisp Interpreter will work.
-/// We call each function, which handels each step, to get our final result and interpreter.
-/// # Arguments
-///
-/// * `input` - Our input from the terminal
-///
+    /// This function is the `heart` so that our Lisp Interpreter will work.
+    /// We call each function, which handels each step, to get our final result and interpreter.
+    /// # Arguments
+    ///
+    /// * `input` - Our input from the terminal
+    ///
     pub fn interpret(&self, input: &str) -> Result<Token> {
         let token_stream = tokenize::tokenize(input);
         let expr = parse::parse(token_stream)?;
-        let out = interpret::interpret(expr, &self.env);
+        let out = interpret::interpret(expr, &self.env)?;
         Ok(out)
     }
 }

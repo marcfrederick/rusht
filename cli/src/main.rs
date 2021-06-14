@@ -5,7 +5,7 @@ use anyhow::{Context, Result};
 use clap::{App, Arg};
 use linefeed::{Command, DefaultTerminal, Function, Interface, Prompter, ReadResult, Terminal};
 
-use rusht::{Interpreter, Token};
+use rusht::{Error, Interpreter, Token};
 
 const PROGRAM_NAME: &str = "rusht";
 const REPL_PROMPT: &str = "rusht> ";
@@ -17,21 +17,10 @@ struct RushtAccept;
 
 impl<Term: Terminal> Function<Term> for RushtAccept {
     fn execute(&self, prompter: &mut Prompter<Term>, count: i32, _ch: char) -> std::io::Result<()> {
-        // TODO: Match out for specific errors (unclosed paren, ...) and do either
-        //  `prompter.accept_input()` or ` prompter.insert(count as usize, '\n')`
-        let buf = prompter.buffer().to_string();
-
-        let hook = std::panic::take_hook();
-        std::panic::set_hook(Box::new(|_info| {}));
-        let result = std::panic::catch_unwind(|| {
-            interpret(buf).expect("")
-        });
-        std::panic::set_hook(hook);
-
-        if result.is_ok() {
-            prompter.accept_input()
-        } else {
-            prompter.insert(count as usize, '\n')
+        match interpret(prompter.buffer().to_string()) {
+            Ok(_) => prompter.accept_input(),
+            Err(Error::MissingClosingParenthesis) => prompter.insert(count as usize, '\n'),
+            Err(_) => prompter.accept_input()
         }
     }
 }
@@ -54,8 +43,7 @@ fn main() -> Result<()> {
 fn interpret_file(file_path: &str) -> Result<()> {
     let result = std::fs::read_to_string(file_path)
         .context("failed to read program from file")
-        .and_then(interpret)
-        .context("failed to interpret file")?;
+        .and_then(|file| interpret(file).context("failed to interpret file"))?;
 
     println!("{}", result);
     Ok(())
@@ -68,10 +56,10 @@ fn start_repl() -> Result<()> {
 
     while let ReadResult::Input(input) = reader.read_line().context("failed to read line")? {
         reader.add_history(input.clone());
-
-        interpret(input)
-            .map(|result| println!("{}", result))
-            .context("failed to interpret line")?;
+        match interpret(input) {
+            Ok(result) => println!("{}", result),
+            Err(error) => println!("{:?}", error)
+        }
     }
 
     if let Some(p) = history_file_path() {
@@ -118,8 +106,7 @@ fn history_file_path() -> Option<PathBuf> {
 }
 
 /// Interprets the given `String` and returns the resulting `Token`.
-fn interpret(src: String) -> Result<Token> {
+fn interpret(src: String) -> rusht::Result<Token> {
     Interpreter::new()
         .interpret(src.as_str())
-        .context("failed to interpret input")
 }
