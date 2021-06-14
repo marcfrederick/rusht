@@ -100,6 +100,9 @@ pub fn get_prelude() -> Prelude {
         "mul" => reduce!(|a, b| a * b => Token::Num),
         "/" => reduce!(|a, b| a / b => Token::Num),
         "div" => reduce!(|a, b| a / b => Token::Num),
+        "concat" => reduce!(|a, b| format!("{}{}", a, b) => Token::Str),
+        "and" => reduce!(|a, b| a && b => Token::Bool),
+        "or" => reduce!(|a, b| a || b => Token::Bool)
         "concat" => reduce!(|a, b| format!("{}{}", a, b) => Token::Str)
         //"exit()" => exitprogram!(exit_func => Token::Str)
     )
