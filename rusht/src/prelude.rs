@@ -34,8 +34,32 @@ pub fn get_prelude() -> Prelude {
         "concat" => |args| reduce(args, |a, b| format!("{}{}", a, b), Token::Str),
         "and" => |args| reduce(args, |a, b| a && b, Token::Bool),
         "or" => |args| reduce(args, |a, b| a || b, Token::Bool),
-        "exit" => |args| exit(args)
+        "exit" => rusht_exit,
+        "if" => rusht_if
     )
+}
+
+/// Checks a given condition and returns one of two possible values.
+///
+/// # Arguments
+///
+/// * `args[0]` - A condition to be checked.
+/// * `args[1]` - The value to be returned if the condition is truthy.
+/// * `args[2]` - The value to be returned if the condition is not truthy.
+///
+/// # Errors
+///
+/// * `TypeError` - If the given condition can't be coerced to a bool.
+fn rusht_if(args: Vec<Token>) -> Result<Token> {
+    if args.len() != 3 {
+        return Err(Error::InvalidNumberOfArguments);
+    }
+
+    // We can safely use unwrap here, as we've previously checked the number of
+    // arguments given to the function.
+    let condition = args.get(0).unwrap().clone().try_into()?;
+    let out_index = if condition { 1 } else { 2 };
+    Ok(args.get(out_index).unwrap().clone())
 }
 
 /// Exits the current process with a given exit code or `0`.
@@ -46,8 +70,10 @@ pub fn get_prelude() -> Prelude {
 ///
 /// # Errors
 ///
-/// If the vector of args has a size greater than 1.
-fn exit(args: Vec<Token>) -> Result<Token> {
+/// * `InvalidNumberOfArguments` - If the vector of args has a size greater
+///     than 1.
+/// * `TypeError` - If the given status code can't be coerced to a number.
+fn rusht_exit(args: Vec<Token>) -> Result<Token> {
     if args.len() > 1 {
         return Err(Error::InvalidNumberOfArguments);
     }
