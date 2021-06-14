@@ -20,8 +20,8 @@ pub enum Error {
     UnexpectedClosingParenthesis,
     #[error("missing expected closing parenthesis")]
     MissingClosingParenthesis,
-    #[error("error")]
-    TypeError,
+    #[error("unable to coerce to correct type")]
+    CouldNotCoerceType,
     #[error("invalid number of arguments passed")]
     InvalidNumberOfArguments,
     #[error("function `{0}` is not defined")]

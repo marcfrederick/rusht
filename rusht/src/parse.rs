@@ -47,7 +47,7 @@ fn parse_it(token_stream: &mut VecDeque<Token>) -> Result<Expr> {
     match token {
         Token::Paren('(') => {
             let mut l = vec![];
-            // TODO: Ugly code, clean this upµ⁄µ
+            // FIXME: See failing test below
             while *token_stream.get(0).ok_or(Error::MissingClosingParenthesis)? != Token::Paren(')') {
                 l.push(parse_it(token_stream)?);
             }
@@ -78,7 +78,55 @@ mod test {
     test_parse!(
         test_empty: vec![Paren('('), Paren(')')] => Ok(Expr::List(vec![])),
         test_single: vec![Paren('('), Num(4.0), Paren(')')] => Ok(Expr::List(vec![Expr::Atom(Num(4.0))])),
-        test_nested: vec![Paren('('), Num(4.0), Paren('('), Num(5.0), Str("foo".to_string()), Paren(')'), Paren(')')] => Ok(Expr::List(vec![Expr::Atom(Num(4.0)), Expr::List(vec![Expr::Atom(Num(5.0)), Expr::Atom(Str("foo".to_string()))])])),
+        test_nested: vec![
+            Paren('('),
+            Num(4.0),
+            Paren('('),
+            Num(5.0),
+            Str("foo".to_string()),
+            Paren(')'),
+            Paren(')')
+        ] => Ok(Expr::List(vec![
+            Expr::Atom(Num(4.0)),
+            Expr::List(vec![
+                Expr::Atom(Num(5.0)),
+                Expr::Atom(Str("foo".to_string()))
+            ])
+        ])),
+        test_if: vec![
+            Paren('('),
+            Ident("if".to_string()),
+            Bool(true),
+            Num(2.0),
+            Num(4.0),
+            Paren(')')
+        ] => Ok(Expr::List(vec![
+            Expr::Atom(Ident("if".to_string())),
+            Expr::Atom(Bool(true)),
+            Expr::Atom(Num(2.0)),
+            Expr::Atom(Num(4.0))
+        ])),
+        test_if_nested: vec![
+            Paren('('),
+            Ident("if".to_string()),
+            Paren('('),
+            Ident("and".to_string()),
+            Bool(true),
+            Bool(true),
+            Paren(')'),
+            Num(2.0),
+            Num(4.0),
+            Paren(')')
+        ] => Ok(Expr::List(vec![
+            Expr::Atom(Ident("if".to_string())),
+            Expr::List(vec![
+                Expr::Atom(Ident("and".to_string())),
+                Expr::Atom(Bool(true)),
+                Expr::Atom(Bool(true))
+            ]),
+            Expr::Atom(Num(2.0)),
+            Expr::Atom(Num(4.0))
+        ])),
         test_unexpected_closing_paren: vec![Paren(')')] => Err(Error::UnexpectedClosingParenthesis),
         test_unclosed_expression: vec![Paren('(')] => Err(Error::MissingClosingParenthesis),
         test_unexpected_end_of_tokenstream: vec![] => Err(Error::UnexpectedEndOfTokenStream)

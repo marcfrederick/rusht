@@ -104,13 +104,11 @@ fn rusht_exit(args: Vec<Token>) -> Result<Token> {
 }
 
 /// Reduces the given vector of `Token`s  using the given `reducer` function.
-/// The result is turned back into a vector using the `finalizer` function.
 ///
 /// # Arguments
 ///
 /// * `args` - The arguments passed to the function.
 /// * `reducer` - A function used to reduce the args to a single value.
-/// * `finalizer` - A function used to turn the result back into a `Token`.
 ///
 /// # Errors
 ///
@@ -119,18 +117,11 @@ fn rusht_exit(args: Vec<Token>) -> Result<Token> {
 /// # Panics
 ///
 /// If one of the args can't be converted to a matching type, a panic occurs.
-fn reduce<T, F, G>(args: Vec<Token>, reducer: F, finalizer: G) -> Result<Token>
+fn reduce<T, F>(args: Vec<Token>, reducer: F) -> Result<Token>
     where
-        T: TryFrom<Token, Error=Error>,
+        T: TryFrom<Token, Error=Error> + Into<Token>,
         F: Fn(T, T) -> T,
-        G: Fn(T) -> Token
 {
-    // The `finalizer` could be replaced by adding `+ Into<Token>` to the type
-    // constraints of `T`. We have decided against this approach for the
-    // added readability.
-    // The alternative implementation would require us to specify the type
-    // encapsulated in the specific `Token` variant, so not much writing effort
-    // would be saved anyways.
     args
         .into_iter()
         .map(|x| x.try_into())
@@ -138,7 +129,7 @@ fn reduce<T, F, G>(args: Vec<Token>, reducer: F, finalizer: G) -> Result<Token>
         .into_iter()
         .reduce(reducer)
         .ok_or(Error::InvalidNumberOfArguments)
-        .map(finalizer)
+        .map(|x| x.into())
 }
 
 #[cfg(test)]
@@ -171,10 +162,10 @@ mod test {
         and_three => "and"; vec![Bool(true), Bool(false), Bool(true)] => Ok(Bool(false)),
         or_two => "or"; vec![Bool(false), Bool(false)] => Ok(Bool(false)),
         or_three => "or"; vec![Bool(true), Bool(false), Bool(true)] => Ok(Bool(true)),
-        coercion_error => "sub"; vec![Bool(true), Str("foo".to_string())] => Err(Error::TypeError),
+        coercion_error => "sub"; vec![Bool(true), Str("foo".to_string())] => Err(Error::CouldNotCoerceType),
         if_true => "if"; vec![Bool(true), Num(1.0), Num(2.0)] => Ok(Num(1.0)),
         if_false => "if"; vec![Bool(false), Num(1.0), Num(2.0)] => Ok(Num(2.0)),
-        if_no_conditional => "if"; vec![Str("foo".to_string()), Num(1.0), Num(2.0)] => Err(Error::TypeError),
+        if_no_conditional => "if"; vec![Str("foo".to_string()), Num(1.0), Num(2.0)] => Err(Error::CouldNotCoerceType),
         if_too_few_args => "if"; vec![Bool(true), Num(1.0)] => Err(Error::InvalidNumberOfArguments),
         if_too_many_args => "if"; vec![Bool(true), Num(1.0), Num(2.0), Num(3.0)] => Err(Error::InvalidNumberOfArguments)
     );
