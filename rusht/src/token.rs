@@ -24,6 +24,24 @@ impl Display for Token {
     }
 }
 
+impl From<f64> for Token {
+    fn from(n: f64) -> Self {
+        Token::Num(n)
+    }
+}
+
+impl From<String> for Token {
+    fn from(s: String) -> Self {
+        Token::Str(s)
+    }
+}
+
+impl From<bool> for Token {
+    fn from(b: bool) -> Self {
+        Token::Bool(b)
+    }
+}
+
 impl TryFrom<Token> for f64 {
     type Error = Error;
 

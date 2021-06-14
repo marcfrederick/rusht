@@ -24,17 +24,17 @@ pub type Prelude = HashMap<String, fn(Vec<Token>) -> Result<Token>>;
 /// Returns a prelude (standard library) of often used functions.
 pub fn get_prelude() -> Prelude {
     prelude!(
-        "+" => |args| reduce(args, |a, b| a + b, Token::Num),
-        "add" => |args| reduce(args, |a, b| a + b, Token::Num),
-        "-" => |args| reduce(args, |a, b| a - b, Token::Num),
-        "sub" => |args| reduce(args, |a, b| a - b, Token::Num),
-        "*" => |args| reduce(args, |a, b| a * b, Token::Num),
-        "mul" => |args| reduce(args, |a, b| a * b, Token::Num),
-        "/" => |args| reduce(args, |a, b| a / b, Token::Num),
-        "div" => |args| reduce(args, |a, b| a / b, Token::Num),
-        "concat" => |args| reduce(args, |a, b| format!("{}{}", a, b), Token::Str),
-        "and" => |args| reduce(args, |a, b| a && b, Token::Bool),
-        "or" => |args| reduce(args, |a, b| a || b, Token::Bool),
+        "+" => |args| reduce(args, |a, b| -> f64 { a + b }),
+        "add" => |args| reduce(args, |a, b| -> f64 { a + b }),
+        "-" => |args| reduce(args, |a, b| -> f64 { a - b }),
+        "sub" => |args| reduce(args, |a, b| -> f64 { a - b }),
+        "*" => |args| reduce(args, |a, b| -> f64 { a * b }),
+        "mul" => |args| reduce(args, |a, b| -> f64 { a * b }),
+        "/" => |args| reduce(args, |a, b| -> f64 { a / b }),
+        "div" => |args| reduce(args, |a, b| -> f64 { a / b }),
+        "concat" => |args| reduce(args, |a, b| -> String { format!("{}{}", a, b) }),
+        "and" => |args| reduce(args, |a, b| -> bool { a && b }),
+        "or" => |args| reduce(args, |a, b| -> bool { a || b }),
         "exit" => rusht_exit,
         "if" => rusht_if,
         "read" => rusht_read
@@ -94,13 +94,11 @@ fn rusht_exit(args: Vec<Token>) -> Result<Token> {
 }
 
 /// Reduces the given vector of `Token`s  using the given `reducer` function.
-/// The result is turned back into a vector using the `finalizer` function.
 ///
 /// # Arguments
 ///
 /// * `args` - The arguments passed to the function.
 /// * `reducer` - A function used to reduce the args to a single value.
-/// * `finalizer` - A function used to turn the result back into a `Token`.
 ///
 /// # Errors
 ///
@@ -109,18 +107,11 @@ fn rusht_exit(args: Vec<Token>) -> Result<Token> {
 /// # Panics
 ///
 /// If one of the args can't be converted to a matching type, a panic occurs.
-fn reduce<T, F, G>(args: Vec<Token>, reducer: F, finalizer: G) -> Result<Token>
+fn reduce<T, F>(args: Vec<Token>, reducer: F) -> Result<Token>
     where
-        T: TryFrom<Token, Error=Error>,
+        T: TryFrom<Token, Error=Error> + Into<Token>,
         F: Fn(T, T) -> T,
-        G: Fn(T) -> Token
 {
-    // The `finalizer` could be replaced by adding `+ Into<Token>` to the type
-    // constraints of `T`. We have decided against this approach for the
-    // added readability.
-    // The alternative implementation would require us to specify the type
-    // encapsulated in the specific `Token` variant, so not much writing effort
-    // would be saved anyways.
     args
         .into_iter()
         .map(|x| x.try_into())
@@ -128,7 +119,7 @@ fn reduce<T, F, G>(args: Vec<Token>, reducer: F, finalizer: G) -> Result<Token>
         .into_iter()
         .reduce(reducer)
         .ok_or(Error::InvalidNumberOfArguments)
-        .map(finalizer)
+        .map(|x| x.into())
 }
 
 #[cfg(test)]
