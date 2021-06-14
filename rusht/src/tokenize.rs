@@ -8,7 +8,6 @@ use std::str::Chars;
 
 use crate::token::Token;
 
-
 /// Takes the input from our terminal and allocates it to the right function/execution.
 /// So that we have a right identification of each input's type.
 /// Putting the input in a TokenStream for our next step: the parser.
@@ -115,6 +114,18 @@ mod test {
             Ident("=".to_string()),
             Bool(true),
             Bool(false),
+            Paren(')')
+        ],
+        tokenize_nested_if_expr: "(if (all true false) 1 2)" => vec![
+            Paren('('),
+            Ident("if".to_string()),
+            Paren('('),
+            Ident("all".to_string()),
+            Bool(true),
+            Bool(false),
+            Paren(')'),
+            Num(1.0),
+            Num(2.0),
             Paren(')')
         ]
     );
