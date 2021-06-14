@@ -59,8 +59,8 @@ impl TryFrom<Token> for bool {
             Token::Bool(b) => Ok(b),
             Token::Num(x) if x == 0.0 => Ok(false),
             Token::Num(_) => Ok(true),
-            Token::Str(s) if ["true", "1"].contains(&s.as_str()) => Ok(true),
-            Token::Str(s) if ["false", "0", ""].contains(&s.as_str()) => Ok(false),
+            Token::Str(s) if ["true", "1"].contains(&s.trim()) => Ok(true),
+            Token::Str(s) if ["false", "0", ""].contains(&s.trim()) => Ok(false),
             _ => Err(Error::CouldNotCoerceType)
         }
     }
