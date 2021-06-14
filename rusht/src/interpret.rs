@@ -6,10 +6,7 @@
 
 use crate::parse::Expr;
 use crate::prelude::Prelude;
-use crate::tokenize::Token;
-use crate::Error;
-use std::process;
-
+use crate::token::Token;
 
 /// Interprets the given Types of the Token-Tree using the given `ast`.
 /// Splitting the given ast into the final function and its passed arguments.
@@ -45,7 +42,7 @@ pub fn interpret(ast: Expr, env: &Prelude) -> Token {
                     let func = env.get(ident).expect("function not found in env");
                     func(args.to_vec()).expect("here should be error handling")
                 }
-                _  => Err(Error::UnreadableTokens)
+                _ => panic!() //Err(Error::UnreadableTokens)
             }
         }
     }
@@ -83,10 +80,12 @@ mod test {
         assert_eq!(out, Token::Num(24.0))
     }
 
+    #[test]
+    #[should_panic]
     fn test_error() {
-        let out = interpret(Expr::List(vec![
+        let _out = interpret(Expr::List(vec![
             Expr::Atom(Token::Ident(String::from("*"))),
         ]), &prelude::get_prelude());
-        assert_eq!(out, Err(Error::MissingNumbers))
+        // assert_eq!(out, Err(Error::MissingNumbers))
     }
 }

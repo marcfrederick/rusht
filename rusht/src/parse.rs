@@ -44,11 +44,6 @@ fn parse_it(token_stream: &mut VecDeque<Token>) -> Result<Expr> {
     let token = token_stream.pop_front()
         .ok_or(Error::UnexpectedEndOfTokenStream)?;
 
-/// To create an Ast for each expression right, we check the braces that separate each execution.
-///
-/// # Errors
-///
-/// If the the expression's brace is missing or started with the closed one.
     match token {
         Token::Paren('(') => {
             let mut l = vec![];
