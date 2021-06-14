@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::convert::{TryFrom, TryInto};
+use std::io::stdin;
 
 use crate::{Error, Result};
 use crate::token::Token;
@@ -35,7 +36,8 @@ pub fn get_prelude() -> Prelude {
         "and" => |args| reduce(args, |a, b| a && b, Token::Bool),
         "or" => |args| reduce(args, |a, b| a || b, Token::Bool),
         "exit" => rusht_exit,
-        "if" => rusht_if
+        "if" => rusht_if,
+        "read" => rusht_read
     )
 }
 
@@ -60,6 +62,13 @@ fn rusht_if(args: Vec<Token>) -> Result<Token> {
     let condition = args.get(0).unwrap().clone().try_into()?;
     let out_index = if condition { 1 } else { 2 };
     Ok(args.get(out_index).unwrap().clone())
+}
+
+/// Reads a line from the console.
+fn rusht_read(_: Vec<Token>) -> Result<Token> {
+    let mut buf = String::new();
+    stdin().read_line(&mut buf).expect("failed to read from console");
+    Ok(Token::Str(buf))
 }
 
 /// Exits the current process with a given exit code or `0`.

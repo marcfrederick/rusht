@@ -32,7 +32,7 @@ impl TryFrom<Token> for f64 {
             Token::Num(n) => Ok(n),
             Token::Bool(true) => Ok(1.0),
             Token::Bool(false) => Ok(0.0),
-            Token::Str(s) if s.parse::<f64>().is_ok() => Ok(s.parse().unwrap()),
+            Token::Str(s) if s.trim().parse::<f64>().is_ok() => Ok(s.trim().parse().unwrap()),
             _ => Err(Error::TypeError)
         }
     }
