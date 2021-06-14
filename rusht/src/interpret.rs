@@ -39,7 +39,7 @@ pub fn interpret(ast: Expr, env: &Prelude) -> Result<Token> {
                         _ => {}
                     }*/
                     let func = env.get(ident)
-                        .ok_or(Error::FunctionNotDefined(ident.to_string()))?;
+                        .ok_or_else(|| Error::FunctionNotDefined(ident.to_string()))?;
                     func(args.to_vec())
                 }
                 _ => Err(Error::UnreadableTokens)
