@@ -79,10 +79,11 @@ fn variable_declare(args: Vec<Token>) -> Result<Token> {
         return Err(Error::InvalidNumberOfArguments);
     }
     //let value = args.get(0).insert(args.get(1).unwrap()).clone();
-    let mut value = args.get(0).unwrap().clone();
+    let mut variable= args.get(0).unwrap().clone();
     let number = args.get(1).unwrap().clone();
-    value = number;
-    Ok(Token::Num(f64::try_from(value)?))
+    variable = number;
+    //Ok(Token::Num(f64::try_from(number)?))
+    Ok(Token::Str(String::try_from(variable)?))
 }
 
 
