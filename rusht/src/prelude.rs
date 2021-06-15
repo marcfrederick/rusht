@@ -35,7 +35,7 @@ pub fn get_prelude() -> Prelude {
         "exit" => rusht_exit,
         "if" => rusht_if,
         "read" => rusht_read,
-        "def" => rusht_varialbe_define
+        "def" => variable_declare
     )
 }
 
@@ -63,17 +63,33 @@ fn rusht_if(args: Vec<Token>) -> Result<Token> {
 }
 
 
+
+/// Checks a given condition and returns one of two possible values.
+///
+/// # Arguments
+///
+/// * `args[0]` - The variable to be declared.
+/// * `args[1]` - The value for the declaration.
+///
+/// # Errors
+///
+/// * `InvalidNumberOfArguments` - If the given arguments are too less or too much.
 fn variable_declare(args: Vec<Token>) -> Result<Token> {
-    if args.len() != 2 {
+    if 2 != args.len() {
         return Err(Error::InvalidNumberOfArguments);
     }
-    let num = args.get(1).unwrap().clone();
-    let value = args.get(0).insert(&num).clone();
-    Ok(Token::Num(num))
+    //let value = args.get(0).insert(args.get(1).unwrap()).clone();
+    let mut value = args.get(0).unwrap().clone();
+    let number = args.get(1).unwrap().clone();
+    value = number;
+    Ok(Token::Num(f64::try_from(value)?))
 }
 
 
 /// Reads a line from the console.
+/// # Arguments
+//
+// * `_` - The upcoming input via terminal.
 fn rusht_read(_: Vec<Token>) -> Result<Token> {
     let mut buf = String::new();
     stdin().read_line(&mut buf).expect("failed to read from console");
