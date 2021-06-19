@@ -51,6 +51,7 @@ fn parse_it(token_stream: &mut VecDeque<Token>) -> Result<Expr> {
             while *token_stream.get(0).ok_or(Error::MissingClosingParenthesis)? != Token::Paren(')') {
                 l.push(parse_it(token_stream)?);
             }
+            token_stream.remove(0);
             Ok(Expr::List(l))
         }
         Token::Paren(')') => Err(Error::UnexpectedClosingParenthesis),
@@ -83,7 +84,6 @@ fn parse_it(token_stream: &mut VecDeque<Token>) -> Result<Expr> {
             }
             Ok(Expr::List(l))
              */
-
 
 #[cfg(test)]
 mod test {
