@@ -3,60 +3,92 @@
 /// This tree handles each calculation/execution by split it into the right Ast to go through
 /// an execution in the right way and get a deterministic result in the end.
 
-use std::collections::VecDeque;
+use std::iter::Peekable;
 
 use crate::Error;
 use crate::Result;
 use crate::token::Token;
 
-/// Creating an enum with the two data types for our Tree.
-/// * Atom: which identifies all given characters in our TokenStream.
-/// * List: which lists all seperated Asts.
+/// Represents a lisp expression.
 #[derive(Debug, PartialEq, Clone)]
 pub enum Expr {
+    /// A single (i.e. atomic) value.
     Atom(Token),
+    /// A list expressions.
     List(Vec<Expr>),
 }
 
 
-/// Here we use a VecDequeue to have the opportunity to easily iterate over our given TokenStream.
+/// Creates an abstract syntax tree from the given (non-empty) token stream.
+/// If the braces in the token stream are not balanced, an error is returned.
 ///
 /// # Arguments
 ///
-/// * `tokenstream` - Our created Tokenstream from the Tokenizer.
-///
-pub fn parse(token_stream: Vec<Token>) -> Result<Expr> {
-    parse_it(&mut VecDeque::from(token_stream))
-}
-
-
-/// Iterates over the given TokenStream and check the input to be able to create the Tree in the
-/// correct and manageable way.
-///
-/// # Arguments
-///
-/// * `tokenstream` - Given expressions via a Queue.
+/// * `token_stream` - A vector containing the tokens to be parsed.
 ///
 /// # Errors
 ///
-/// If the tokenstream surprisingly ends.
-fn parse_it(token_stream: &mut VecDeque<Token>) -> Result<Expr> {
-    let token = token_stream.pop_front()
-        .ok_or(Error::UnexpectedEndOfTokenStream)?;
+/// * `UnexpectedEndOfTokenStream` - If the given token stream is empty.
+/// * `MissingClosingParenthesis` - If the number of opening braces exceeds the
+///     number of closing braces.
+/// * `UnexpectedClosingParenthesis` - If the number of closing braces exceeds
+///     the number of opening braces.
+pub fn parse<T>(token_stream: T) -> Result<Expr>
+    where
+        T: IntoIterator<Item=Token>
+{
+    parse_it(&mut token_stream.into_iter().peekable())
+}
 
-    match token {
-        Token::Paren('(') => {
-            let mut l = vec![];
-            // FIXME: See failing test below
-            while *token_stream.get(0).ok_or(Error::MissingClosingParenthesis)? != Token::Paren(')') {
-                l.push(parse_it(token_stream)?);
-            }
-            token_stream.remove(0);
-            Ok(Expr::List(l))
-        }
+
+/// Creates an abstract syntax tree from the given iterator of tokens.
+///
+/// # Arguments
+///
+/// * `token_stream` - A peekable iterator, containing the tokens to be parsed.
+///
+/// # Errors
+///
+/// * `UnexpectedEndOfTokenStream` - If the given token stream is empty.
+/// * `MissingClosingParenthesis` - If the number of opening braces exceeds the
+///     number of closing braces.
+/// * `UnexpectedClosingParenthesis` - If the number of closing braces exceeds
+///     the number of opening braces.
+fn parse_it<T>(token_stream: &mut Peekable<T>) -> Result<Expr>
+    where
+        T: Iterator<Item=Token>
+{
+    match token_stream.next().ok_or(Error::UnexpectedEndOfTokenStream)? {
+        Token::Paren('(') => parse_nested_expression(token_stream),
         Token::Paren(')') => Err(Error::UnexpectedClosingParenthesis),
         atom => Ok(Expr::Atom(atom))
     }
+}
+
+/// Parses a nested expression from the given token stream.
+///
+/// An expression begins at each opening brace and ends at the matching closing
+/// brace.
+///
+/// # Arguments
+///
+/// * `token_stream` - A peekable iterator, containing the tokens to be parsed.
+///
+/// # Errors
+///
+/// * `MissingClosingParenthesis` - If the number of opening braces exceeds the
+///     number of closing braces.
+#[inline]
+fn parse_nested_expression<T>(token_stream: &mut Peekable<T>) -> Result<Expr>
+    where
+        T: Iterator<Item=Token>
+{
+    let mut list = vec![];
+    while *token_stream.peek().ok_or(Error::MissingClosingParenthesis)? != Token::Paren(')') {
+        list.push(parse_it(token_stream)?);
+    }
+    token_stream.next();
+    Ok(Expr::List(list))
 }
 
 #[cfg(test)]
@@ -69,8 +101,7 @@ mod test {
             $(
                 #[test]
                 fn $name() {
-                    let out = parse($input);
-                    assert_eq!(out, $expected);
+                    assert_eq!(parse($input), $expected);
                 }
             )*
         };
