@@ -75,13 +75,4 @@ mod test {
         ]), &prelude::get_prelude());
         assert_eq!(out, Ok(Token::Num(24.0)))
     }
-
-    #[test]
-    #[should_panic]
-    fn test_error() {
-        let _out = interpret(Expr::List(vec![
-            Expr::Atom(Token::Ident(String::from("*"))),
-        ]), &prelude::get_prelude());
-        // assert_eq!(out, Err(Error::MissingNumbers))
-    }
 }
