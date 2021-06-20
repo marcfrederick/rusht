@@ -2,27 +2,25 @@ use std::collections::HashMap;
 use std::convert::{TryFrom, TryInto};
 use std::io::stdin;
 
-use crate::{Error, Result};
+use crate::{Error, Result, Env};
+use crate::parse::Expr;
 use crate::token::Token;
 
 /// Using macros to initialize the hash map in an easier and compact way.
 macro_rules! prelude {
     ($($key:expr => $val:expr),*) => {
         {
-            let mut hash_map: Prelude = HashMap::new();
+            let mut hash_map: Env = HashMap::new();
             $(
-                hash_map.insert($key.to_string(), $val);
+                hash_map.insert($key.to_string(), Expr::Func($val));
             )*
             hash_map
         }
     };
 }
 
-/// A key value mapping of function names and the accompanying implementation.
-pub type Prelude = HashMap<String, fn(Vec<Token>) -> Result<Token>>;
-
 /// Returns a prelude (standard library) of often used functions.
-pub fn get_prelude() -> Prelude {
+pub fn get_prelude() -> Env {
     prelude!(
         "+" => |args| reduce(args, |a, b| -> f64 { a + b }),
         "-" => |args| reduce(args, |a, b| -> f64 { a - b }),
@@ -156,9 +154,10 @@ mod test {
             $(
                 #[test]
                 fn $name() {
-                    let prelude = get_prelude();
-                    let actual = prelude.get($key).unwrap()($input);
-                    assert_eq!(actual, $expected);
+                    match get_prelude().get($key).expect("function name not found in prelude") {
+                        Expr::Func(func) => assert_eq!(func($input), $expected),
+                        _ => panic!("expression is not a function")
+                    }
                 }
             )*
         };

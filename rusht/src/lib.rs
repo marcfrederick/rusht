@@ -1,6 +1,8 @@
+use std::collections::HashMap;
+
 use thiserror::Error;
 
-use crate::prelude::Prelude;
+use crate::parse::Expr;
 pub use crate::token::Token;
 
 mod tokenize;
@@ -35,10 +37,11 @@ pub enum Error {
 /// Type resulting either a success (`Ok`) or failure (`Err`)
 pub type Result<T> = std::result::Result<T, Error>;
 
+type Env = HashMap<String, Expr>;
 
 /// The name of our used Hashmap passed in a struct.
 pub struct Interpreter {
-    env: Prelude,
+    env: Env,
 }
 
 /// Implementing the Interpreter for our Hashmap.
@@ -55,10 +58,10 @@ impl Interpreter {
     ///
     /// * `input` - Our input from the terminal
     ///
-    pub fn interpret(&self, input: &str) -> Result<Token> {
+    pub fn interpret(&mut self, input: &str) -> Result<Token> {
         let token_stream = tokenize::tokenize(input);
         let expr = parse::parse(token_stream)?;
-        let out = interpret::interpret(expr, &self.env)?;
+        let out = interpret::interpret(expr, &mut self.env)?;
         Ok(out)
     }
 }

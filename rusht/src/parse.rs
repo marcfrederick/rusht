@@ -16,6 +16,8 @@ pub enum Expr {
     Atom(Token),
     /// A list expressions.
     List(Vec<Expr>),
+    /// A function type.
+    Func(fn(Vec<Token>) -> Result<Token>),
 }
 
 
