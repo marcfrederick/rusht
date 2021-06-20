@@ -4,7 +4,6 @@ use std::io::stdin;
 
 use crate::{Error, Result};
 use crate::token::Token;
-use thiserror::private::DisplayAsDisplay;
 
 /// Using macros to initialize the hash map in an easier and compact way.
 macro_rules! prelude {
@@ -63,7 +62,6 @@ fn rusht_if(args: Vec<Token>) -> Result<Token> {
 }
 
 
-
 /// Checks a given condition and returns one of two possible values.
 ///
 /// # Arguments
@@ -79,7 +77,7 @@ fn variable_declare(args: Vec<Token>) -> Result<Token> {
         return Err(Error::InvalidNumberOfArguments);
     }
     //let value = args.get(0).insert(args.get(1).unwrap()).clone();
-    let mut variable= args.get(0).unwrap().clone();
+    let mut variable = args.get(0).unwrap().clone();
     let number = args.get(1).unwrap().clone();
     variable = number;
     //Ok(Token::Num(f64::try_from(number)?))
@@ -168,7 +166,7 @@ mod test {
 
     test_prelude!(
         add_two => "+"; vec![Num(1.0), Num(2.0)] => Ok(Num(3.0)),
-        add_three => "add"; vec![Num(1.0), Num(2.0), Num(2.0)] => Ok(Num(5.0)),
+        add_three => "+"; vec![Num(1.0), Num(2.0), Num(2.0)] => Ok(Num(5.0)),
         add_with_corecion => "+"; vec![Bool(true), Str("5".to_string())] => Ok(Num(6.0)),
         sub => "-"; vec![Num(5.0), Num(2.0)] => Ok(Num(3.0)),
         mul => "*"; vec![Num(5.0), Num(2.0)] => Ok(Num(10.0)),
@@ -178,7 +176,7 @@ mod test {
         and_three => "and"; vec![Bool(true), Bool(false), Bool(true)] => Ok(Bool(false)),
         or_two => "or"; vec![Bool(false), Bool(false)] => Ok(Bool(false)),
         or_three => "or"; vec![Bool(true), Bool(false), Bool(true)] => Ok(Bool(true)),
-        coercion_error => "sub"; vec![Bool(true), Str("foo".to_string())] => Err(Error::CouldNotCoerceType),
+        coercion_error => "-"; vec![Bool(true), Str("foo".to_string())] => Err(Error::CouldNotCoerceType),
         if_true => "if"; vec![Bool(true), Num(1.0), Num(2.0)] => Ok(Num(1.0)),
         if_false => "if"; vec![Bool(false), Num(1.0), Num(2.0)] => Ok(Num(2.0)),
         if_no_conditional => "if"; vec![Str("foo".to_string()), Num(1.0), Num(2.0)] => Err(Error::CouldNotCoerceType),
