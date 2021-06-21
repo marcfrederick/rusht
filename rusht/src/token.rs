@@ -3,7 +3,7 @@ use std::fmt::{Display, Formatter};
 
 use crate::{Error, Result};
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub enum Token {
     Paren(char),
     Num(f64),

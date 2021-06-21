@@ -32,7 +32,13 @@ pub fn get_prelude() -> Env {
         "exit" => rusht_exit,
         "if" => rusht_if,
         "read" => rusht_read,
-        "def" => variable_declare
+        "def" => variable_declare,
+        "==" => rusht_strict_eq,
+        "=" => |args| rusht_cmp(args, |a, b| (a - b).abs() < f64::EPSILON),
+        "<" => |args| rusht_cmp(args, |a, b| a < b),
+        "<=" => |args| rusht_cmp(args, |a, b| a <= b),
+        ">" => |args| rusht_cmp(args, |a, b| a > b),
+        ">=" => |args| rusht_cmp(args, |a, b| a >= b)
     )
 }
 
@@ -84,13 +90,50 @@ fn variable_declare(args: Vec<Token>) -> Result<Token> {
 
 
 /// Reads a line from the console.
+///
 /// # Arguments
-//
-// * `_` - The upcoming input via terminal.
+///
+/// * `_` - The upcoming input via terminal.
 fn rusht_read(_: Vec<Token>) -> Result<Token> {
     let mut buf = String::new();
     stdin().read_line(&mut buf).expect("failed to read from console");
     Ok(Token::Str(buf))
+}
+
+/// Compares the given args strictly, meaning they must be of the same type
+/// and value.
+///
+/// # Arguments
+///
+/// * `args` - The arguments passed to the function.
+fn rusht_strict_eq(args: Vec<Token>) -> Result<Token> {
+    Ok(Token::Bool(args.windows(2).all(|w| w[0] == w[1])))
+}
+
+/// Compares the numeric values of its arguments using a given comparator
+/// function. The comparison is performed loosely, meaning all values are
+/// coerced to numbers before being compared.
+///
+/// # Arguments
+///
+/// * `args` - The arguments passed to the function.
+/// * `cmp` - A comparison function taking two subsequent values.
+///
+/// # Errors
+///
+/// * `TypeError` - If one or more of the arguments can't be coerced to a
+///     number.
+fn rusht_cmp<F>(args: Vec<Token>, cmp: F) -> Result<Token>
+    where
+        F: Fn(f64, f64) -> bool
+{
+    Ok(args
+        .into_iter()
+        .map(|x| x.try_into())
+        .collect::<Result<Vec<f64>>>()?
+        .windows(2)
+        .all(|w| cmp(w[0], w[1]))
+        .into())
 }
 
 /// Exits the current process with a given exit code or `0`.
