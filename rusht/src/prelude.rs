@@ -32,7 +32,6 @@ pub fn get_prelude() -> Env {
         "exit" => rusht_exit,
         "if" => rusht_if,
         "read" => rusht_read,
-        "def" => variable_declare,
         "==" => rusht_strict_eq,
         "=" => |args| rusht_cmp(args, |a, b| (a - b).abs() < f64::EPSILON),
         "<" => |args| rusht_cmp(args, |a, b| a < b),
@@ -64,30 +63,6 @@ fn rusht_if(args: Vec<Token>) -> Result<Token> {
     let out_index = if condition { 1 } else { 2 };
     Ok(args.get(out_index).unwrap().clone())
 }
-
-
-/// Checks a given condition and returns one of two possible values.
-///
-/// # Arguments
-///
-/// * `args[0]` - The variable to be declared.
-/// * `args[1]` - The value for the declaration.
-///
-/// # Errors
-///
-/// * `InvalidNumberOfArguments` - If the given arguments are too less or too much.
-fn variable_declare(args: Vec<Token>) -> Result<Token> {
-    if 2 != args.len() {
-        return Err(Error::InvalidNumberOfArguments);
-    }
-    //let value = args.get(0).insert(args.get(1).unwrap()).clone();
-    let mut variable = args.get(0).unwrap().clone();
-    let number = args.get(1).unwrap().clone();
-    variable = number;
-    //Ok(Token::Num(f64::try_from(number)?))
-    Ok(Token::Str(String::try_from(variable)?))
-}
-
 
 /// Reads a line from the console.
 ///

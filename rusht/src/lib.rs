@@ -32,6 +32,10 @@ pub enum Error {
     UnreadableTokens,
     #[error("missing tokens for execution")]
     MissingTokens,
+    #[error("attempted to use function `{0}` as a variable")]
+    AttemptedToUseFunctionAsVariable(String),
+    #[error("variable `{0}` is not defined")]
+    VariableNotDefined(String),
 }
 
 /// Type resulting either a success (`Ok`) or failure (`Err`)

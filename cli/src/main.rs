@@ -1,29 +1,15 @@
 use std::path::PathBuf;
-use std::sync::Arc;
 
 use anyhow::{Context, Result};
 use clap::{App, Arg};
-use linefeed::{Command, DefaultTerminal, Function, Interface, Prompter, ReadResult, Terminal};
+use linefeed::{DefaultTerminal, Interface, ReadResult};
 
-use rusht::{Error, Interpreter, Token};
+use rusht::{Interpreter, Token};
 
 const PROGRAM_NAME: &str = "rusht";
 const REPL_PROMPT: &str = "rusht> ";
 const REPL_HISTORY_FILE_NAME: &str = ".rusht_history";
 const REPL_HISTORY_SIZE: usize = 100;
-
-
-struct RushtAccept;
-
-impl<Term: Terminal> Function<Term> for RushtAccept {
-    fn execute(&self, prompter: &mut Prompter<Term>, count: i32, _ch: char) -> std::io::Result<()> {
-        match interpret(prompter.buffer().to_string()) {
-            Ok(_) => prompter.accept_input(),
-            Err(Error::MissingClosingParenthesis) => prompter.insert(count as usize, '\n'),
-            Err(_) => prompter.accept_input()
-        }
-    }
-}
 
 
 fn main() -> Result<()> {
@@ -54,9 +40,10 @@ fn start_repl() -> Result<()> {
     let reader = init_reader()
         .context("failed to initialize reader")?;
 
+    let mut interpreter = Interpreter::new();
     while let ReadResult::Input(input) = reader.read_line().context("failed to read line")? {
         reader.add_history(input.clone());
-        match interpret(input) {
+        match interpreter.interpret(input.as_str()) {
             Ok(result) => println!("{}", result),
             Err(error) => println!("{:?}", error)
         }
@@ -83,9 +70,6 @@ fn init_reader() -> Result<Interface<DefaultTerminal>> {
         reader.load_history(p).context("failed to load history")?
     }
 
-    reader.define_function("rusht-accept", Arc::from(RushtAccept));
-    reader.bind_sequence("\n", Command::from_str("rusht-accept"));
-    reader.bind_sequence("\r", Command::from_str("rusht-accept"));
     {
         let mut reader = reader.lock_reader();
         reader.blink_matching_paren();
