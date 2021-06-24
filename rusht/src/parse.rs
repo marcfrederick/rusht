@@ -1,7 +1,8 @@
 /// This is our Lisp Interpreter's second step:
-/// Here we pass our made TokenStream and put it into an AbstractTree.
-/// This tree handles each calculation/execution by split it into the right Ast to go through
-/// an execution in the right way and get a deterministic result in the end.
+/// Here we pass our TokenStream and put it into an AbstractTree.
+/// The input gets splitted by going through the tokenstream and
+/// split each stream's list correctly by parsing it one knot with
+/// the inside order to manage the right final execution.
 
 use std::iter::Peekable;
 
@@ -22,7 +23,7 @@ pub enum Expr {
 
 
 /// Creates an abstract syntax tree from the given (non-empty) token stream.
-/// If the braces in the token stream are not balanced, an error is returned.
+/// Here we iterate throught the tokenstream and call
 ///
 /// # Arguments
 ///
@@ -44,6 +45,7 @@ pub fn parse<T>(token_stream: T) -> Result<Expr>
 
 
 /// Creates an abstract syntax tree from the given iterator of tokens.
+/// If the braces in the token stream are not balanced, an error is returned.
 ///
 /// # Arguments
 ///
@@ -66,6 +68,7 @@ fn parse_it<T>(token_stream: &mut Peekable<T>) -> Result<Expr>
         atom => Ok(Expr::Atom(atom))
     }
 }
+
 
 /// Parses a nested expression from the given token stream.
 ///

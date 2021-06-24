@@ -1,16 +1,19 @@
 /// This is our Lisp Interpreter's first step:
 /// Here we pass our terminal input into a TokenStream.
 /// This gives us the opportunity to first of all identify our input's data types.
-/// And secondly put everything together in a vector for passing it to the next step.
+/// And secondly put everything together in a tokenstream for passing it to the next step.
 
 use std::iter::Peekable;
 use std::str::Chars;
 
 use crate::token::Token;
 
-/// Takes the input from our terminal and allocates it to the right function/execution.
-/// So that we have a right identification of each input's type.
-/// Putting the input in a TokenStream for our next step: the parser.
+/// Takes the input from our terminal and checks each char with allocating it to the right function.
+/// In the end we have each input's type which we pass to the Parser.
+///
+/// # Arguments
+///
+/// * `input` - The passed input.
 pub fn tokenize(input: &str) -> Vec<Token> {
     let mut tokens = vec![];
 
@@ -30,6 +33,10 @@ pub fn tokenize(input: &str) -> Vec<Token> {
 
 /// Takes a single number from the characters. Numbers are made up of the
 /// numerals from 0 to 9 as well as the period (.) character.
+///
+/// # Arguments
+///
+/// * `it` - The passed number of our input.
 fn take_number(it: &mut Peekable<Chars>) -> Token {
     let mut val = String::new();
 
@@ -49,6 +56,10 @@ fn take_number(it: &mut Peekable<Chars>) -> Token {
 /// quotation mark.
 /// This function assumes the passed iterator to have the opening quotation
 /// mark at the beginning and skips it without further checks.
+///
+/// # Arguments
+///
+/// * `it` - The passed string of our input.
 fn take_str(it: &mut Peekable<Chars>) -> Token {
     // Skip the leading quotation mark without any further checks. This is
     // fine here, as we control all the invocations of this function.
@@ -57,8 +68,12 @@ fn take_str(it: &mut Peekable<Chars>) -> Token {
         .collect())
 }
 
-/// Takes a identifier or boolean from the characters. The token is assumed to
+/// Takes an identifier or boolean from the characters. The token is assumed to
 /// end at the first occurrence of whitespace.
+///
+/// # Arguments
+///
+/// * `it` - The passed identifier of our input.
 fn take_ident_or_bool(it: &mut Peekable<Chars>) -> Token {
     let mut val = String::new();
 

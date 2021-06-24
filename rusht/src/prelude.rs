@@ -51,7 +51,7 @@ pub fn get_prelude() -> Env {
 ///
 /// # Errors
 ///
-/// * `TypeError` - If the given condition can't be coerced to a bool.
+/// * `InvalidNumberOfArguments` - If there are too less or too many passed arguments.
 fn rusht_if(args: Vec<Token>) -> Result<Token> {
     if args.len() != 3 {
         return Err(Error::InvalidNumberOfArguments);
@@ -64,6 +64,7 @@ fn rusht_if(args: Vec<Token>) -> Result<Token> {
     Ok(args.get(out_index).unwrap().clone())
 }
 
+
 /// Reads a line from the console.
 ///
 /// # Arguments
@@ -75,7 +76,8 @@ fn rusht_read(_: Vec<Token>) -> Result<Token> {
     Ok(Token::Str(buf))
 }
 
-/// Compares the given args strictly, meaning they must be of the same type
+
+/// Compares the given `args` strictly, meaning they must be of the same type
 /// and value.
 ///
 /// # Arguments
@@ -84,6 +86,7 @@ fn rusht_read(_: Vec<Token>) -> Result<Token> {
 fn rusht_strict_eq(args: Vec<Token>) -> Result<Token> {
     Ok(Token::Bool(args.windows(2).all(|w| w[0] == w[1])))
 }
+
 
 /// Compares the numeric values of its arguments using a given comparator
 /// function. The comparison is performed loosely, meaning all values are
@@ -143,7 +146,7 @@ fn rusht_exit(args: Vec<Token>) -> Result<Token> {
 ///
 /// # Errors
 ///
-/// If the vector of args is empty, an error type will be returned.
+/// `InvalidNumberOfArguments` - If the vector of args is empty, an error type will be returned.
 ///
 /// # Panics
 ///
