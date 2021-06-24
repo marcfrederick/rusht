@@ -59,7 +59,7 @@ fn rusht_if(args: Vec<Token>) -> Result<Token> {
 
     // We can safely use unwrap here, as we've previously checked the number of
     // arguments given to the function.
-    let condition = args.get(0).unwrap().clone().try_into()?;
+    let condition = args.first().unwrap().clone().try_into()?;
     let out_index = if condition { 1 } else { 2 };
     Ok(args.get(out_index).unwrap().clone())
 }
@@ -104,7 +104,7 @@ fn rusht_cmp<F>(args: Vec<Token>, cmp: F) -> Result<Token>
 {
     Ok(args
         .into_iter()
-        .map(|x| x.try_into())
+        .map(Token::try_into)
         .collect::<Result<Vec<f64>>>()?
         .windows(2)
         .all(|w| cmp(w[0], w[1]))
@@ -127,8 +127,9 @@ fn rusht_exit(args: Vec<Token>) -> Result<Token> {
         return Err(Error::InvalidNumberOfArguments);
     }
 
-    let status_code = args.get(0)
-        .map(|token| token.clone().try_into())
+    let status_code = args.first()
+        .cloned()
+        .map(Token::try_into)
         .unwrap_or(Ok(0.0))?;
     std::process::exit(status_code as i32);
 }
@@ -154,12 +155,12 @@ fn reduce<T, F>(args: Vec<Token>, reducer: F) -> Result<Token>
 {
     args
         .into_iter()
-        .map(|x| x.try_into())
+        .map(Token::try_into)
         .collect::<Result<Vec<_>>>()?
         .into_iter()
         .reduce(reducer)
         .ok_or(Error::InvalidNumberOfArguments)
-        .map(|x| x.into())
+        .map(T::into)
 }
 
 #[cfg(test)]
