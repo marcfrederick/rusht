@@ -1,13 +1,13 @@
 /// This is our Lisp Interpreter's third step:
-/// Here we pass our built Tree.
-/// If the tree is built up in the correct way, we can easily parse through it and call the using
-/// function with passing the needed arguments.
-/// So here we interpret out terminal input and do the executions.
+/// Here we pass our built SyntaxTree.
+/// If the tree is built up in the correct way, we can easily parse through
+/// it and call the needed function with the passed arguments.
+
+use std::convert::TryInto;
 
 use crate::{Env, Error, Result};
 use crate::parse::Expr;
 use crate::token::Token;
-use std::convert::TryInto;
 
 /// Interprets the given Types of the Token-Tree using the given `ast`.
 /// Splitting the given ast into the final function and its passed arguments.
@@ -26,34 +26,37 @@ pub fn interpret(ast: Expr, env: &mut Env) -> Result<Token> {
     match ast {
         Expr::Atom(token) => Ok(token),
         Expr::List(tokens) => {
-            let tokens = tokens.iter()
-                .map(|t| interpret(t.clone(), env))
-                .collect::<Result<Vec<_>>>()?;
-
-            let (func, args) = tokens.split_at(1);
-            match func.get(0) {
-                Some(Token::Ident(ident)) => {
-                    let args = resolve_variables(env, args)?;
+            match tokens.first() {
+                Some(Expr::Atom(Token::Ident(ident))) => {
                     match ident.as_str() {
-                        "def" => rusht_def(args, env),
+                        "def" => interpret_args(&tokens, env).and_then(|args| rusht_def(args, env)),
+                        "func" => todo!("function definition"),
                         _ => {
-                            match env.get(ident) {
-                                Some(Expr::Func(func)) => func(args),
+                            match env.get(ident).cloned() {
+                                Some(Expr::Func(func)) => interpret_args(&tokens, env).and_then(func),
                                 Some(_) => Err(Error::UnreadableTokens),
                                 None => Err(Error::FunctionNotDefined(ident.to_string())),
                             }
                         }
                     }
-                }
-                Some(_) => Err(Error::UnreadableTokens),
-                None => Err(Error::UnreadableTokens),
+                },
+                _ => Err(Error::UnreadableTokens),
             }
         }
-        _ => Err(Error::UnreadableTokens)
+        _ => Err(Error::UnreadableTokens),
     }
 }
 
-fn resolve_variables(env: &mut Env, args: &[Token]) -> Result<Vec<Token>> {
+fn interpret_args(tokens: &[Expr], env: &mut Env) -> Result<Vec<Token>> {
+    let args = tokens.iter()
+        .skip(1)
+        .cloned()
+        .map(|t| interpret(t, env))
+        .collect::<Result<Vec<_>>>()?;
+    resolve_variables(&args, env)
+}
+
+fn resolve_variables(args: &[Token], env: &mut Env) -> Result<Vec<Token>> {
     Ok(args.iter()
         .map(|token| match token {
             Token::Ident(var_name) => match env.get(var_name) {
@@ -86,11 +89,12 @@ fn rusht_def(args: Vec<Token>, env: &mut Env) -> Result<Token> {
 
 #[cfg(test)]
 mod test {
+    use std::collections::HashMap;
+
     use crate::prelude;
+    use crate::prelude::get_prelude;
 
     use super::*;
-    use std::collections::HashMap;
-    use crate::prelude::get_prelude;
 
     #[test]
     fn single_add() {
