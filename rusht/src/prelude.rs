@@ -1,3 +1,7 @@
+/// In prelude we define our hash map with its key (operator)
+/// and the belonging value (called function with passed arguments).
+/// Depending on the called operator we defined each a function.
+
 use std::collections::HashMap;
 use std::convert::{TryFrom, TryInto};
 use std::io::stdin;
@@ -7,6 +11,8 @@ use crate::parse::Expr;
 use crate::token::Token;
 
 /// Using macros to initialize the hash map in an easier and compact way.
+/// Each entry of the map has a key and the belongig value.
+/// The key presents an operator that maps to the needed function.
 macro_rules! prelude {
     ($($key:expr => $val:expr),*) => {
         {
@@ -65,7 +71,7 @@ fn rusht_if(args: Vec<Token>) -> Result<Token> {
 }
 
 
-/// Reads a line from the console.
+/// Reads a line from the terminal.
 ///
 /// # Arguments
 ///

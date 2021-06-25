@@ -1,3 +1,10 @@
+/// Lib is like our library.
+/// Here we define our needed error for handling the
+/// normal panic! calls.
+/// And define our important used map to even be 
+/// able to handle the written identifiers which
+/// are our operaters with the allocated execution.
+
 use std::collections::HashMap;
 
 use thiserror::Error;
@@ -12,8 +19,8 @@ mod prelude;
 mod token;
 
 
-/// Using an enum for Error Handling to call the right message when an error occurs and so easily
-/// replacing the panic!() call.
+/// Using an enum for Error Handling to call the right message 
+/// when an error occurs.
 #[derive(Error, Debug, Eq, PartialEq)]
 pub enum Error {
     #[error("token stream ended unexpectedly")]
@@ -48,19 +55,21 @@ pub struct Interpreter {
     env: Env,
 }
 
-/// Implementing the Interpreter for our Hashmap.
-/// get_prelude(): parsing the needed arguments and function for each identifier to HashMap.
-/// Which is actually the initialization of our Map.
+/// Implementing the Interpreter for our Hashmap by parsing the 
+/// needed arguments and function for each identifier to HashMap
+/// which is actually the initialization of our Map.
 impl Interpreter {
     pub fn new() -> Interpreter {
         Interpreter { env: prelude::get_prelude() }
     }
 
     /// This function is the `heart` so that our Lisp Interpreter will work.
-    /// We call each function, which handels each step, to get our final result and interpreter.
-    /// # Arguments
+    /// This function summarizes our three steps: 
+    /// the tokenstream which presents our input with the datatypes,
+    /// the expression which presents our parser which handles the AbstractTree,
+    /// and the out which presents our interpretation for the execution.
     ///
-    /// * `input` - Our input from the terminal
+    /// * `input` - Our input from the terminal.
     ///
     pub fn interpret(&mut self, input: &str) -> Result<Token> {
         let token_stream = tokenize::tokenize(input);
@@ -70,8 +79,8 @@ impl Interpreter {
     }
 }
 
-/// When the given arguments are wrong, instead of normally parse anything, we create our new
-/// Interpreter -> Hash Map
+/// When the given arguments are wrong, instead of normally parsing anything, 
+/// we create a new Interpreter.
 impl Default for Interpreter {
     fn default() -> Self {
         Interpreter::new()
