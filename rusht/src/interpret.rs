@@ -38,28 +38,25 @@ pub fn interpret(ast: Expr, env: &mut Env) -> Result<Token> {
 
 ///  TO-DO
 fn interpret_args(tokens: &[Expr], env: &mut Env) -> Result<Vec<Token>> {
-    let args = tokens.iter()
+    tokens.iter()
         .skip(1)
         .cloned()
         .map(|t| interpret(t, env))
-        .collect::<Result<Vec<_>>>()?;
-    resolve_variables(&args, env)
+        .collect::<Result<Vec<_>>>()
+        .and_then(|args| resolve_variables(&args, env))
 }
 
 fn resolve_variables(args: &[Token], env: &mut Env) -> Result<Vec<Token>> {
-    Ok(args.iter()
+    args.iter()
         .map(|token| match token {
             Token::Ident(var_name) => match env.get(var_name) {
-                Some(Expr::Atom(x)) => Ok(x),
+                Some(Expr::Atom(x)) => Ok(x.clone()),
                 Some(_) => Err(Error::AttemptedToUseFunctionAsVariable(var_name.clone())),
                 None => Err(Error::VariableNotDefined(var_name.clone()))
             },
-            x => Ok(x),
+            x => Ok(x.clone()),
         })
-        .collect::<Result<Vec<_>>>()?
-        .into_iter()
-        .cloned()
-        .collect::<Vec<_>>())
+        .collect::<Result<Vec<_>>>()
 }
 
 /// TO-DO
