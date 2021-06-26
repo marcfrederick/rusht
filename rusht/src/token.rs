@@ -2,7 +2,6 @@
 /// a roundup of Atoms (= Operaters), Parantheses (= Braces)
 /// and Numbers.
 /// Here we define these types with the special extras.
-
 use std::convert::TryFrom;
 use std::fmt::{Display, Formatter};
 
@@ -47,7 +46,6 @@ impl From<f64> for Token {
     }
 }
 
-
 /// To give back the String datatype.
 impl From<String> for Token {
     fn from(s: String) -> Self {
@@ -55,14 +53,12 @@ impl From<String> for Token {
     }
 }
 
-
 /// To give back the Boolean datatype.
 impl From<bool> for Token {
     fn from(b: bool) -> Self {
         Token::Bool(b)
     }
 }
-
 
 /// Implementing datatypes for more interaction as
 /// a Number as well with checking the coercion error.
@@ -75,7 +71,7 @@ impl TryFrom<Token> for f64 {
             Token::Bool(true) => Ok(1.0),
             Token::Bool(false) => Ok(0.0),
             Token::Str(s) => s.trim().parse().map_err(|_| Error::CouldNotCoerceType),
-            _ => Err(Error::CouldNotCoerceType)
+            _ => Err(Error::CouldNotCoerceType),
         }
     }
 }
@@ -90,11 +86,10 @@ impl TryFrom<Token> for String {
             Token::Str(s) => Ok(s),
             Token::Bool(b) => Ok(b.to_string()),
             Token::Num(n) => Ok(n.to_string()),
-            _ => Err(Error::CouldNotCoerceType)
+            _ => Err(Error::CouldNotCoerceType),
         }
     }
 }
-
 
 /// For interaction with the other datatypes they are
 /// implemented to be used as a Boolean as well.
@@ -108,7 +103,7 @@ impl TryFrom<Token> for bool {
             Token::Num(_) => Ok(true),
             Token::Str(s) if ["true", "1"].contains(&s.trim()) => Ok(true),
             Token::Str(s) if ["false", "0", ""].contains(&s.trim()) => Ok(false),
-            _ => Err(Error::CouldNotCoerceType)
+            _ => Err(Error::CouldNotCoerceType),
         }
     }
 }

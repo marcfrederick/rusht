@@ -3,12 +3,11 @@
 /// The input gets splitted by going through the tokenstream and
 /// split each stream's list correctly by parsing it to one knot
 /// with the inside order to manage the right final execution.
-
 use std::iter::Peekable;
 
+use crate::token::Token;
 use crate::Error;
 use crate::Result;
-use crate::token::Token;
 
 /// Represents a lisp expression.
 #[derive(Debug, PartialEq, Clone)]
@@ -20,7 +19,6 @@ pub enum Expr {
     /// A function type.
     Func(fn(Vec<Token>) -> Result<Token>),
 }
-
 
 /// Creates an abstract syntax tree from the given (non-empty) token stream.
 /// Here we iterate throught the tokenstream and call
@@ -37,12 +35,11 @@ pub enum Expr {
 /// * `UnexpectedClosingParenthesis` - If the number of closing braces exceeds
 ///     the number of opening braces.
 pub fn parse<T>(token_stream: T) -> Result<Expr>
-    where
-        T: IntoIterator<Item=Token>
+where
+    T: IntoIterator<Item = Token>,
 {
     parse_it(&mut token_stream.into_iter().peekable())
 }
-
 
 /// Creates an abstract syntax tree from the given iterator of tokens.
 /// If the braces in the token stream are not balanced, an error is returned.
@@ -59,16 +56,18 @@ pub fn parse<T>(token_stream: T) -> Result<Expr>
 /// * `UnexpectedClosingParenthesis` - If the number of closing braces exceeds
 ///     the number of opening braces.
 fn parse_it<T>(token_stream: &mut Peekable<T>) -> Result<Expr>
-    where
-        T: Iterator<Item=Token>
+where
+    T: Iterator<Item = Token>,
 {
-    match token_stream.next().ok_or(Error::UnexpectedEndOfTokenStream)? {
+    match token_stream
+        .next()
+        .ok_or(Error::UnexpectedEndOfTokenStream)?
+    {
         Token::Paren('(') => parse_nested_expression(token_stream),
         Token::Paren(')') => Err(Error::UnexpectedClosingParenthesis),
-        atom => Ok(Expr::Atom(atom))
+        atom => Ok(Expr::Atom(atom)),
     }
 }
-
 
 /// Parses a nested expression from the given token stream.
 ///
@@ -85,11 +84,15 @@ fn parse_it<T>(token_stream: &mut Peekable<T>) -> Result<Expr>
 ///     number of closing braces.
 #[inline]
 fn parse_nested_expression<T>(token_stream: &mut Peekable<T>) -> Result<Expr>
-    where
-        T: Iterator<Item=Token>
+where
+    T: Iterator<Item = Token>,
 {
     let mut list = vec![];
-    while *token_stream.peek().ok_or(Error::MissingClosingParenthesis)? != Token::Paren(')') {
+    while *token_stream
+        .peek()
+        .ok_or(Error::MissingClosingParenthesis)?
+        != Token::Paren(')')
+    {
         list.push(parse_it(token_stream)?);
     }
     token_stream.next();
@@ -98,8 +101,8 @@ fn parse_nested_expression<T>(token_stream: &mut Peekable<T>) -> Result<Expr>
 
 #[cfg(test)]
 mod test {
-    use super::*;
     use super::Token::*;
+    use super::*;
 
     macro_rules! test_parse {
         ($($name:ident: $input:expr => $expected:expr),*) => {

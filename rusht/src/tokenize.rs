@@ -2,7 +2,6 @@
 /// Here we pass our terminal input into a TokenStream.
 /// This gives us the opportunity to first of all identify our input's data types.
 /// And secondly put everything together in a tokenstream for passing it to the next step.
-
 use std::iter::Peekable;
 use std::str::Chars;
 
@@ -23,8 +22,10 @@ pub fn tokenize(input: &str) -> Vec<Token> {
             '(' | ')' => tokens.push(Token::Paren(it.next().unwrap())),
             '0'..='9' => tokens.push(take_number(&mut it)),
             '"' => tokens.push(take_str(&mut it)),
-            _ if c.is_whitespace() => { it.next(); }
-            _ => tokens.push(take_ident_or_bool(&mut it))
+            _ if c.is_whitespace() => {
+                it.next();
+            }
+            _ => tokens.push(take_ident_or_bool(&mut it)),
         };
     }
 
@@ -63,9 +64,7 @@ fn take_number(it: &mut Peekable<Chars>) -> Token {
 fn take_str(it: &mut Peekable<Chars>) -> Token {
     // Skip the leading quotation mark without any further checks. This is
     // fine here, as we control all the invocations of this function.
-    Token::Str(it.skip(1)
-        .take_while(|&c| c != '"')
-        .collect())
+    Token::Str(it.skip(1).take_while(|&c| c != '"').collect())
 }
 
 /// Takes an identifier or boolean from the characters. The token is assumed to
@@ -86,14 +85,14 @@ fn take_ident_or_bool(it: &mut Peekable<Chars>) -> Token {
 
     match val.as_str() {
         "true" | "false" => Token::Bool(val.parse().unwrap()),
-        _ => Token::Ident(val)
+        _ => Token::Ident(val),
     }
 }
 
 #[cfg(test)]
 mod test {
-    use super::*;
     use super::Token::*;
+    use super::*;
 
     macro_rules! test_tokenize {
         ($($name:ident: $input:expr => $expected:expr),*) => {

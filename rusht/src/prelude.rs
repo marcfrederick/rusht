@@ -1,14 +1,13 @@
 /// In prelude we define our hash map with its key (operator)
 /// and the belonging value (called function with passed arguments).
 /// Depending on the called operator we defined each a function.
-
 use std::collections::HashMap;
 use std::convert::{TryFrom, TryInto};
 use std::io::stdin;
 
-use crate::{Error, Result, Env};
 use crate::parse::Expr;
 use crate::token::Token;
+use crate::{Env, Error, Result};
 
 /// Using macros to initialize the hash map in an easier and compact way.
 /// Each entry of the map has a key and the belongig value.
@@ -70,7 +69,6 @@ fn rusht_if(args: Vec<Token>) -> Result<Token> {
     Ok(args.get(out_index).unwrap().clone())
 }
 
-
 /// Reads a line from the terminal.
 ///
 /// # Arguments
@@ -78,10 +76,11 @@ fn rusht_if(args: Vec<Token>) -> Result<Token> {
 /// * `_` - The upcoming input via terminal.
 fn rusht_read(_: Vec<Token>) -> Result<Token> {
     let mut buf = String::new();
-    stdin().read_line(&mut buf).expect("failed to read from console");
+    stdin()
+        .read_line(&mut buf)
+        .expect("failed to read from console");
     Ok(Token::Str(buf))
 }
-
 
 /// Compares the given `args` strictly, meaning they must be of the same type
 /// and value.
@@ -92,7 +91,6 @@ fn rusht_read(_: Vec<Token>) -> Result<Token> {
 fn rusht_strict_eq(args: Vec<Token>) -> Result<Token> {
     Ok(Token::Bool(args.windows(2).all(|w| w[0] == w[1])))
 }
-
 
 /// Compares the numeric values of its arguments using a given comparator
 /// function. The comparison is performed loosely, meaning all values are
@@ -108,8 +106,8 @@ fn rusht_strict_eq(args: Vec<Token>) -> Result<Token> {
 /// * `TypeError` - If one or more of the arguments can't be coerced to a
 ///     number.
 fn rusht_cmp<F>(args: Vec<Token>, cmp: F) -> Result<Token>
-    where
-        F: Fn(f64, f64) -> bool
+where
+    F: Fn(f64, f64) -> bool,
 {
     Ok(args
         .into_iter()
@@ -136,7 +134,8 @@ fn rusht_exit(args: Vec<Token>) -> Result<Token> {
         return Err(Error::InvalidNumberOfArguments);
     }
 
-    let status_code = args.first()
+    let status_code = args
+        .first()
         .cloned()
         .map(Token::try_into)
         .unwrap_or(Ok(0.0))?;
@@ -158,12 +157,11 @@ fn rusht_exit(args: Vec<Token>) -> Result<Token> {
 ///
 /// If one of the args can't be converted to a matching type, a panic occurs.
 fn reduce<T, F>(args: Vec<Token>, reducer: F) -> Result<Token>
-    where
-        T: TryFrom<Token, Error=Error> + Into<Token>,
-        F: Fn(T, T) -> T,
+where
+    T: TryFrom<Token, Error = Error> + Into<Token>,
+    F: Fn(T, T) -> T,
 {
-    args
-        .into_iter()
+    args.into_iter()
         .map(Token::try_into)
         .collect::<Result<Vec<_>>>()?
         .into_iter()
@@ -174,8 +172,8 @@ fn reduce<T, F>(args: Vec<Token>, reducer: F) -> Result<Token>
 
 #[cfg(test)]
 mod test {
-    use super::*;
     use super::Token::*;
+    use super::*;
 
     macro_rules! test_prelude {
         ($($name:ident => $key:expr; $input:expr => $expected:expr),*) => {

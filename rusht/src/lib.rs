@@ -4,7 +4,6 @@
 /// And define our important used map to even be
 /// able to handle the written identifiers which
 /// are our operaters with the allocated execution.
-
 use std::collections::HashMap;
 
 use thiserror::Error;
@@ -12,14 +11,13 @@ use thiserror::Error;
 use crate::parse::Expr;
 pub use crate::token::Token;
 
-mod tokenize;
-mod parse;
 mod interpret;
+mod parse;
 mod prelude;
 mod token;
+mod tokenize;
 
-
-/// Using an enum for Error Handling to call the right message 
+/// Using an enum for Error Handling to call the right message
 /// when an error occurs.
 #[derive(Error, Debug, Eq, PartialEq)]
 pub enum Error {
@@ -56,16 +54,18 @@ pub struct Interpreter {
     env: Env,
 }
 
-/// Implementing the Interpreter for our Hashmap by parsing the 
+/// Implementing the Interpreter for our Hashmap by parsing the
 /// needed arguments and function for each identifier to HashMap
 /// which is actually the initialization of our Map.
 impl Interpreter {
     pub fn new() -> Interpreter {
-        Interpreter { env: prelude::get_prelude() }
+        Interpreter {
+            env: prelude::get_prelude(),
+        }
     }
 
     /// This function is the heart so that our Lisp Interpreter will work.
-    /// This function summarizes our three steps: 
+    /// This function summarizes our three steps:
     /// the tokenstream which presents our input with the datatypes,
     /// the expression which presents our parser which handles the AbstractTree,
     /// and the out which presents our interpretation for the execution.

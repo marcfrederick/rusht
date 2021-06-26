@@ -11,7 +11,6 @@ const REPL_PROMPT: &str = "rusht> ";
 const REPL_HISTORY_FILE_NAME: &str = ".rusht_history";
 const REPL_HISTORY_SIZE: usize = 100;
 
-
 fn main() -> Result<()> {
     let matches = App::new(PROGRAM_NAME)
         .version("0.1.0")
@@ -21,7 +20,7 @@ fn main() -> Result<()> {
 
     match matches.value_of("FILE") {
         None => start_repl(),
-        Some(file) => interpret_file(file)
+        Some(file) => interpret_file(file),
     }
 }
 
@@ -37,21 +36,19 @@ fn interpret_file(file_path: &str) -> Result<()> {
 
 /// Starts a new REPL.
 fn start_repl() -> Result<()> {
-    let reader = init_reader()
-        .context("failed to initialize reader")?;
+    let reader = init_reader().context("failed to initialize reader")?;
 
     let mut interpreter = Interpreter::new();
     while let ReadResult::Input(input) = reader.read_line().context("failed to read line")? {
         reader.add_history(input.clone());
         match interpreter.interpret(input.as_str()) {
             Ok(result) => println!("{}", result),
-            Err(error) => println!("{:?}", error)
+            Err(error) => println!("{:?}", error),
         }
     }
 
     if let Some(p) = history_file_path() {
-        reader.save_history(p)
-            .context("failed to write history")?;
+        reader.save_history(p).context("failed to write history")?;
     }
 
     Ok(())
@@ -61,10 +58,11 @@ fn start_repl() -> Result<()> {
 ///
 /// The returned value is either an `Ok`, containing an initialized interface, or an `Err`.
 fn init_reader() -> Result<Interface<DefaultTerminal>> {
-    let reader = Interface::new(PROGRAM_NAME)
-        .context("failed to get terminal interface")?;
+    let reader = Interface::new(PROGRAM_NAME).context("failed to get terminal interface")?;
 
-    reader.set_prompt(REPL_PROMPT).context("failed to set prompt")?;
+    reader
+        .set_prompt(REPL_PROMPT)
+        .context("failed to set prompt")?;
     reader.set_history_size(REPL_HISTORY_SIZE);
     if let Some(p) = history_file_path() {
         reader.load_history(p).context("failed to load history")?
@@ -91,6 +89,5 @@ fn history_file_path() -> Option<PathBuf> {
 
 /// Interprets the given `String` and returns the resulting `Token`.
 fn interpret(src: String) -> rusht::Result<Token> {
-    Interpreter::new()
-        .interpret(src.as_str())
+    Interpreter::new().interpret(src.as_str())
 }
