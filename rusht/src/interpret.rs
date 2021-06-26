@@ -8,7 +8,20 @@ use crate::parse::Expr;
 use crate::token::Token;
 use crate::{Env, Error, Result};
 
-/// TO-DO
+/// Interprets the given abstract syntax tree, returning  either the resulting
+/// token or an error.
+///
+/// * `ast` - An abstract syntax tree.
+/// * `env` - The global execution environment containing variable definitions.
+///
+/// # Errors
+///
+/// * `AttemptedToUseFunctionAsVariable` - When the arguments contain an
+///     identifier that would resolve to a function definition.
+/// * `VariableNotDefined` - When the arguments contain an identifier, for
+///     which no corresponding value is found in the execution environment.
+/// * `FunctionNotDefined` - When attempting to call an undefined function.
+/// * `UnreadableTokens` - TODO
 pub fn interpret(ast: Expr, env: &mut Env) -> Result<Token> {
     match ast {
         Expr::Atom(token) => Ok(token),
@@ -28,7 +41,20 @@ pub fn interpret(ast: Expr, env: &mut Env) -> Result<Token> {
     }
 }
 
-///  TO-DO
+/// Recursively interprets the arguments of the given slice of expressions.
+///
+/// # Arguments
+///
+/// * `args` - A slice of expressions, from which to interpret the argument
+///     part (everything from index 1 upwards)
+/// * `env` - The global execution environment containing variable definitions.
+///
+/// # Errors
+///
+/// * `AttemptedToUseFunctionAsVariable` - When the arguments contain an
+///     identifier that would resolve to a function definition.
+/// * `VariableNotDefined` - When the arguments contain an identifier, for
+///     which no corresponding value is found in the execution environment.
 fn interpret_args(tokens: &[Expr], env: &mut Env) -> Result<Vec<Token>> {
     tokens
         .iter()
@@ -39,6 +65,20 @@ fn interpret_args(tokens: &[Expr], env: &mut Env) -> Result<Vec<Token>> {
         .and_then(|args| resolve_variables(&args, env))
 }
 
+/// Replaces identifiers in the given slice of tokens with their corresponding
+/// values from the environment.
+///
+/// # Arguments
+///
+/// * `args` - A slice of tokens, in which variables should be resolved.
+/// * `env` - The global execution environment containing variable definitions.
+///
+/// # Errors
+///
+/// * `AttemptedToUseFunctionAsVariable` - When the arguments contain an
+///     identifier that would resolve to a function definition.
+/// * `VariableNotDefined` - When the arguments contain an identifier, for
+///     which no corresponding value is found in the execution environment.
 fn resolve_variables(args: &[Token], env: &mut Env) -> Result<Vec<Token>> {
     args.iter()
         .map(|token| match token {
