@@ -12,6 +12,7 @@ pub enum Expr {
     Bool(bool),
     List(Vec<Expr>),
     Func(fn(Vec<Expr>) -> Result<Expr>),
+    Lambda { args: Vec<String>, body: Box<Expr> },
 }
 
 impl Display for Expr {
@@ -21,6 +22,7 @@ impl Display for Expr {
             Expr::Str(x) => write!(f, "{}", x),
             Expr::Ident(x) => write!(f, "{}", x),
             Expr::Bool(x) => write!(f, "{}", x),
+            Expr::Lambda { .. } => write!(f, "ƛ"),
             Expr::List(_) => todo!(),
             Expr::Func(_) => todo!(),
         }

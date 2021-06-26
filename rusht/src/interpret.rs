@@ -4,8 +4,8 @@
 //! through it and call the needed function with the passed arguments.
 use std::convert::TryInto;
 
-use crate::{Env, Error, Result};
 use crate::expr::Expr;
+use crate::{Env, Error, Result};
 
 /// Interprets the given abstract syntax tree, returning  either the resulting
 /// token or an error.
@@ -30,6 +30,13 @@ pub fn interpret(ast: Expr, env: &mut Env) -> Result<Expr> {
                 "func" => rusht_lambda(&exprs[1..], env),
                 _ => match env.get(ident).cloned() {
                     Some(Expr::Func(func)) => interpret_args(&exprs[1..], env).and_then(func),
+                    Some(Expr::Lambda { args, body }) => {
+                        let mut local_env = env.clone();
+                        for (key, val) in args.iter().zip(&mut exprs[1..].iter()) {
+                            local_env.insert(key.clone(), val.clone());
+                        }
+                        interpret(*body, &mut local_env)
+                    }
                     Some(_) => Err(Error::UnreadableTokens),
                     None => Err(Error::FunctionNotDefined(ident.to_string())),
                 },
@@ -118,7 +125,21 @@ fn rusht_def(args: &[Expr], env: &mut Env) -> Result<Expr> {
 
 fn rusht_lambda(exprs: &[Expr], _env: &mut Env) -> Result<Expr> {
     match exprs {
-        [Expr::List(_args), Expr::List(_body)] => todo!(),
+        [Expr::List(args), body] if args.iter().all(|x| matches!(x, Expr::Ident(_))) => {
+            let args = args
+                .iter()
+                .cloned()
+                .map(|x| match x {
+                    Expr::Ident(x) => Ok(x),
+                    _ => Err(Error::CouldNotCoerceType),
+                })
+                .collect::<Result<Vec<_>>>()?;
+
+            Ok(Expr::Lambda {
+                args,
+                body: Box::from(body.clone()),
+            })
+        }
         [_, _] => Err(Error::CouldNotCoerceType),
         &_ => Err(Error::InvalidNumberOfArguments),
     }

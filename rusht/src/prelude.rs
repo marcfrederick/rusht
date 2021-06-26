@@ -5,8 +5,8 @@ use std::collections::HashMap;
 use std::convert::{TryFrom, TryInto};
 use std::io::stdin;
 
-use crate::{Env, Error, Result};
 use crate::expr::Expr;
+use crate::{Env, Error, Result};
 
 /// Using macros to initialize the hash map in an easier and compact way.
 /// Each entry of the map has a key and the belongig value.
@@ -106,8 +106,8 @@ fn rusht_strict_eq(args: Vec<Expr>) -> Result<Expr> {
 /// * `TypeError` - If one or more of the arguments can't be coerced to a
 ///     number.
 fn rusht_cmp<F>(args: Vec<Expr>, cmp: F) -> Result<Expr>
-    where
-        F: Fn(f64, f64) -> bool,
+where
+    F: Fn(f64, f64) -> bool,
 {
     Ok(args
         .into_iter()
@@ -157,9 +157,9 @@ fn rusht_exit(args: Vec<Expr>) -> Result<Expr> {
 ///
 /// If one of the args can't be converted to a matching type, a panic occurs.
 fn reduce<T, F>(args: Vec<Expr>, reducer: F) -> Result<Expr>
-    where
-        T: TryFrom<Expr, Error=Error> + Into<Expr>,
-        F: Fn(T, T) -> T,
+where
+    T: TryFrom<Expr, Error = Error> + Into<Expr>,
+    F: Fn(T, T) -> T,
 {
     args.into_iter()
         .map(Expr::try_into)
@@ -172,8 +172,8 @@ fn reduce<T, F>(args: Vec<Expr>, reducer: F) -> Result<Expr>
 
 #[cfg(test)]
 mod test {
-    use super::*;
     use super::Expr::*;
+    use super::*;
 
     macro_rules! test_prelude {
         ($($name:ident => $key:expr; $input:expr => $expected:expr),*) => {

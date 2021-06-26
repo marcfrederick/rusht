@@ -6,10 +6,10 @@
 use std::convert::TryInto;
 use std::iter::Peekable;
 
-use crate::Error;
 use crate::expr::Expr;
-use crate::Result;
 use crate::tokenize::Token;
+use crate::Error;
+use crate::Result;
 
 /// Creates an abstract syntax tree from the given (non-empty) token stream.
 /// Here we iterate throught the tokenstream and call
@@ -92,8 +92,8 @@ where
 
 #[cfg(test)]
 mod test {
-    use super::*;
     use super::Token::*;
+    use super::*;
 
     macro_rules! test_parse {
         ($($name:ident: $input:expr => $expected:expr),*) => {
