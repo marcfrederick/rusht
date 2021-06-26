@@ -1,7 +1,7 @@
-/// This is our Lisp Interpreter's first step:
-/// Here we pass our terminal input into a TokenStream.
-/// This gives us the opportunity to first of all identify our input's data types.
-/// And secondly put everything together in a tokenstream for passing it to the next step.
+//! This is our Lisp Interpreter's first step:
+//! Here we pass our terminal input into a TokenStream.
+//! This gives us the opportunity to first of all identify our input's data types.
+//! And secondly put everything together in a tokenstream for passing it to the next step.
 use std::iter::Peekable;
 use std::str::Chars;
 

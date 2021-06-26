@@ -1,7 +1,7 @@
-/// This is our Lisp Interpreter's third step:
-/// Here we pass our built SyntaxTree.
-/// If the tree is built up in the correct way, we can easily parse
-/// through it and call the needed function with the passed arguments.
+//! This is our Lisp Interpreter's third step:
+//! Here we pass our built SyntaxTree.
+//! If the tree is built up in the correct way, we can easily parse
+//! through it and call the needed function with the passed arguments.
 use std::convert::TryInto;
 
 use crate::parse::Expr;

@@ -1,7 +1,7 @@
-/// As we know the TokenStream only takes Tokens which are
-/// a roundup of Atoms (= Operaters), Parantheses (= Braces)
-/// and Numbers.
-/// Here we define these types with the special extras.
+//! As we know the TokenStream only takes Tokens which are
+//! a roundup of Atoms (= Operaters), Parantheses (= Braces)
+//! and Numbers.
+//! Here we define these types with the special extras.
 use std::convert::TryFrom;
 use std::fmt::{Display, Formatter};
 

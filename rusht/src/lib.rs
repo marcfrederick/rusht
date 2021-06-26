@@ -1,9 +1,9 @@
-/// Lib is like our library.
-/// Here we define our needed error for handling the
-/// normal panic! calls.
-/// And define our important used map to even be
-/// able to handle the written identifiers which
-/// are our operaters with the allocated execution.
+//! Lib is like our library.
+//! Here we define our needed error for handling the
+//! normal panic! calls.
+//! And define our important used map to even be
+//! able to handle the written identifiers which
+//! are our operaters with the allocated execution.
 use std::collections::HashMap;
 
 use thiserror::Error;

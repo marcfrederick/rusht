@@ -1,6 +1,6 @@
-/// In prelude we define our hash map with its key (operator)
-/// and the belonging value (called function with passed arguments).
-/// Depending on the called operator we defined each a function.
+//! In prelude we define our hash map with its key (operator)
+//! and the belonging value (called function with passed arguments).
+//! Depending on the called operator we defined each a function.
 use std::collections::HashMap;
 use std::convert::{TryFrom, TryInto};
 use std::io::stdin;
