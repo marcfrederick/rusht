@@ -14,7 +14,7 @@ pub fn interpret(ast: Expr, env: &mut Env) -> Result<Token> {
         Expr::Atom(token) => Ok(token),
         Expr::List(tokens) => match tokens.first() {
             Some(Expr::Atom(Token::Ident(ident))) => match ident.as_str() {
-                "def" => interpret_args(&tokens, env).and_then(|args| rusht_def(args, env)),
+                "def" => interpret_args(&tokens, env).and_then(|args| rusht_def(&args, env)),
                 "func" => todo!("function definition"),
                 _ => match env.get(ident).cloned() {
                     Some(Expr::Func(func)) => interpret_args(&tokens, env).and_then(func),
@@ -52,17 +52,29 @@ fn resolve_variables(args: &[Token], env: &mut Env) -> Result<Vec<Token>> {
         .collect::<Result<Vec<_>>>()
 }
 
-/// TO-DO
-fn rusht_def(args: Vec<Token>, env: &mut Env) -> Result<Token> {
-    if args.len() != 2 {
-        return Err(Error::InvalidNumberOfArguments);
+/// Defines or updates a variable in the environment.
+///
+/// # Arguments
+///
+/// * `args` - The arguments passed at the `def` function invocation. Should
+///     have a length of exactly two elements, the variable name and value.
+/// * `env` - The global execution environment containing the existing function
+///     and variable definitions.
+///
+/// # Errors
+///
+/// * `InvalidNumberOfArguments` - If the length of `args` is not 2.
+/// * `CouldNotCoerceType` - If the first argument could not be coerced to a
+///     string.
+fn rusht_def(args: &[Token], env: &mut Env) -> Result<Token> {
+    match args {
+        [key, val] => {
+            let key = key.clone().try_into()?;
+            env.insert(key, Expr::Atom(val.clone()));
+            Ok(val.clone())
+        }
+        _ => Err(Error::InvalidNumberOfArguments),
     }
-
-    let key = args.get(0).unwrap().clone().try_into()?;
-    let val = args.get(1).unwrap();
-    env.insert(key, Expr::Atom(val.clone()));
-
-    Ok(val.clone())
 }
 
 #[cfg(test)]
