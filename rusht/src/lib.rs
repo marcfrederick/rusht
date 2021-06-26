@@ -36,7 +36,7 @@ pub enum Error {
     #[error("missing tokens or cannot be read")]
     UnreadableTokens,
     #[error("missing tokens for execution")]
-    MissingTokens,
+    MissingTokens, //doesn't exist yet
     #[error("attempted to use function `{0}` as a variable")]
     AttemptedToUseFunctionAsVariable(String),
     #[error("variable `{0}` is not defined")]

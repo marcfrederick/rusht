@@ -31,6 +31,7 @@ pub fn get_prelude() -> Env {
         "-" => |args| reduce(args, |a, b| -> f64 { a - b }),
         "*" => |args| reduce(args, |a, b| -> f64 { a * b }),
         "/" => |args| reduce(args, |a, b| -> f64 { a / b }),
+        "%" => |args| reduce(args, |a, b| -> f64 { a % b }),
         "concat" => |args| reduce(args, |a, b| -> String { format!("{}{}", a, b) }),
         "and" => |args| reduce(args, |a, b| -> bool { a && b }),
         "or" => |args| reduce(args, |a, b| -> bool { a || b }),
@@ -196,6 +197,8 @@ mod test {
         sub => "-"; vec![Num(5.0), Num(2.0)] => Ok(Num(3.0)),
         mul => "*"; vec![Num(5.0), Num(2.0)] => Ok(Num(10.0)),
         div => "/"; vec![Num(5.0), Num(2.0)] => Ok(Num(2.5)),
+        modul_num => "%"; vec![Num(1.0), Num(4.0)] => Ok(Num(1.0)),
+        modul_bool => "%"; vec![Num(8.0), Bool(true)] => Ok(Num(0.0)),
         concat => "concat"; vec![Str("foo".to_string()), Str("bar".to_string())] => Ok(Str("foobar".to_string())),
         and_two => "and"; vec![Bool(true), Bool(true)] => Ok(Bool(true)),
         and_three => "and"; vec![Bool(true), Bool(false), Bool(true)] => Ok(Bool(false)),
@@ -206,6 +209,13 @@ mod test {
         if_false => "if"; vec![Bool(false), Num(1.0), Num(2.0)] => Ok(Num(2.0)),
         if_no_conditional => "if"; vec![Str("foo".to_string()), Num(1.0), Num(2.0)] => Err(Error::CouldNotCoerceType),
         if_too_few_args => "if"; vec![Bool(true), Num(1.0)] => Err(Error::InvalidNumberOfArguments),
-        if_too_many_args => "if"; vec![Bool(true), Num(1.0), Num(2.0), Num(3.0)] => Err(Error::InvalidNumberOfArguments)
+        if_too_many_args => "if"; vec![Bool(true), Num(1.0), Num(2.0), Num(3.0)] => Err(Error::InvalidNumberOfArguments),
+        bigger => ">"; vec![Num(10.0), Num(8.0)] => Ok(Bool(true)),
+        equal_bigger => ">="; vec![Num(1.0), Num(1.0)] => Ok(Bool(true)),
+        equal_bigger_bool => ">="; vec![Bool(false), Num(1.0)] => Ok(Bool(false)),
+        smaller => "<"; vec![Num(5.0), Num(4.9)] => Ok(Bool(false)),
+        equal_smaller => "<="; vec![Num(3.0), Num(3.1)] => Ok(Bool(true)),
+        compare_true => "=="; vec![Num(4.0), Num(4.0)]=> Ok(Bool(true)),
+        compare_false => "=="; vec![Num(4.0), Num(3.0)] => Ok(Bool(false))
     );
 }
