@@ -1,7 +1,7 @@
 /// Lib is like our library.
 /// Here we define our needed error for handling the
 /// normal panic! calls.
-/// And define our important used map to even be 
+/// And define our important used map to even be
 /// able to handle the written identifiers which
 /// are our operaters with the allocated execution.
 
@@ -51,6 +51,7 @@ pub type Result<T> = std::result::Result<T, Error>;
 type Env = HashMap<String, Expr>;
 
 /// The name of our used Hashmap passed in a struct.
+#[derive(Debug, Default)]
 pub struct Interpreter {
     env: Env,
 }
@@ -63,7 +64,7 @@ impl Interpreter {
         Interpreter { env: prelude::get_prelude() }
     }
 
-    /// This function is the `heart` so that our Lisp Interpreter will work.
+    /// This function is the heart so that our Lisp Interpreter will work.
     /// This function summarizes our three steps: 
     /// the tokenstream which presents our input with the datatypes,
     /// the expression which presents our parser which handles the AbstractTree,
@@ -76,13 +77,5 @@ impl Interpreter {
         let expr = parse::parse(token_stream)?;
         let out = interpret::interpret(expr, &mut self.env)?;
         Ok(out)
-    }
-}
-
-/// When the given arguments are wrong, instead of normally parsing anything, 
-/// we create a new Interpreter.
-impl Default for Interpreter {
-    fn default() -> Self {
-        Interpreter::new()
     }
 }
