@@ -25,12 +25,12 @@ use crate::{Env, Error, Result};
 pub fn interpret(ast: Expr, env: &mut Env) -> Result<Token> {
     match ast {
         Expr::Atom(token) => Ok(token),
-        Expr::List(tokens) => match tokens.first() {
+        Expr::List(exprs) => match exprs.first() {
             Some(Expr::Atom(Token::Ident(ident))) => match ident.as_str() {
-                "def" => interpret_args(&tokens, env).and_then(|args| rusht_def(&args, env)),
-                "func" => todo!("function definition"),
+                "def" => interpret_args(&exprs[1..], env).and_then(|args| rusht_def(&args, env)),
+                "func" => rusht_lambda(&exprs[1..], env),
                 _ => match env.get(ident).cloned() {
-                    Some(Expr::Func(func)) => interpret_args(&tokens, env).and_then(func),
+                    Some(Expr::Func(func)) => interpret_args(&exprs[1..], env).and_then(func),
                     Some(_) => Err(Error::UnreadableTokens),
                     None => Err(Error::FunctionNotDefined(ident.to_string())),
                 },
@@ -45,8 +45,7 @@ pub fn interpret(ast: Expr, env: &mut Env) -> Result<Token> {
 ///
 /// # Arguments
 ///
-/// * `args` - A slice of expressions, from which to interpret the argument
-///     part (everything from index 1 upwards)
+/// * `args` - A slice of expressions to be interpreted.
 /// * `env` - The global execution environment containing variable definitions.
 ///
 /// # Errors
@@ -55,10 +54,9 @@ pub fn interpret(ast: Expr, env: &mut Env) -> Result<Token> {
 ///     identifier that would resolve to a function definition.
 /// * `VariableNotDefined` - When the arguments contain an identifier, for
 ///     which no corresponding value is found in the execution environment.
-fn interpret_args(tokens: &[Expr], env: &mut Env) -> Result<Vec<Token>> {
-    tokens
+fn interpret_args(exprs: &[Expr], env: &mut Env) -> Result<Vec<Token>> {
+    exprs
         .iter()
-        .skip(1)
         .cloned()
         .map(|t| interpret(t, env))
         .collect::<Result<Vec<_>>>()
@@ -114,6 +112,14 @@ fn rusht_def(args: &[Token], env: &mut Env) -> Result<Token> {
             Ok(val.clone())
         }
         _ => Err(Error::InvalidNumberOfArguments),
+    }
+}
+
+fn rusht_lambda(exprs: &[Expr], env: &mut Env) -> Result<Token> {
+    match exprs {
+        [Expr::List(args), Expr::List(body)] => todo!(),
+        [_, _] => Err(Error::CouldNotCoerceType),
+        &_ => Err(Error::InvalidNumberOfArguments),
     }
 }
 
