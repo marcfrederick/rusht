@@ -5,6 +5,12 @@ use crate::tokenize::Token;
 use crate::{Error, Result};
 
 #[derive(Debug, PartialEq, Clone)]
+pub struct Lambda {
+    pub args: Vec<String>,
+    pub body: Box<Expr>,
+}
+
+#[derive(Debug, PartialEq, Clone)]
 pub enum Expr {
     Num(f64),
     Str(String),
@@ -12,7 +18,7 @@ pub enum Expr {
     Bool(bool),
     List(Vec<Expr>),
     Func(fn(Vec<Expr>) -> Result<Expr>),
-    Lambda { args: Vec<String>, body: Box<Expr> },
+    Lambda(Lambda),
 }
 
 impl Display for Expr {

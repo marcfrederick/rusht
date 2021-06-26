@@ -4,7 +4,7 @@
 //! through it and call the needed function with the passed arguments.
 use std::convert::TryInto;
 
-use crate::expr::Expr;
+use crate::expr::{Expr, Lambda};
 use crate::{Env, Error, Result};
 
 /// Interprets the given abstract syntax tree, returning  either the resulting
@@ -30,13 +30,7 @@ pub fn interpret(ast: Expr, env: &mut Env) -> Result<Expr> {
                 "func" => rusht_lambda(&exprs[1..], env),
                 _ => match env.get(ident).cloned() {
                     Some(Expr::Func(func)) => interpret_args(&exprs[1..], env).and_then(func),
-                    Some(Expr::Lambda { args, body }) => {
-                        let mut local_env = env.clone();
-                        for (key, val) in args.iter().zip(&mut exprs[1..].iter()) {
-                            local_env.insert(key.clone(), val.clone());
-                        }
-                        interpret(*body, &mut local_env)
-                    }
+                    Some(Expr::Lambda(lambda)) => interpret_lambda(lambda, &exprs[1..], env),
                     Some(_) => Err(Error::UnreadableTokens),
                     None => Err(Error::FunctionNotDefined(ident.to_string())),
                 },
@@ -45,6 +39,18 @@ pub fn interpret(ast: Expr, env: &mut Env) -> Result<Expr> {
         },
         _ => Err(Error::UnreadableTokens),
     }
+}
+
+fn interpret_lambda(lambda: Lambda, given_args: &[Expr], env: &Env) -> Result<Expr> {
+    if lambda.args.len() != given_args.len() {
+        return Err(Error::InvalidNumberOfArguments);
+    }
+
+    let mut local_env = env.clone();
+    for (key, val) in lambda.args.iter().zip(&mut given_args.iter()) {
+        local_env.insert(key.clone(), val.clone());
+    }
+    interpret(*lambda.body, &mut local_env)
 }
 
 /// Recursively interprets the arguments of the given slice of expressions.
@@ -135,10 +141,10 @@ fn rusht_lambda(exprs: &[Expr], _env: &mut Env) -> Result<Expr> {
                 })
                 .collect::<Result<Vec<_>>>()?;
 
-            Ok(Expr::Lambda {
+            Ok(Expr::Lambda(Lambda {
                 args,
                 body: Box::from(body.clone()),
-            })
+            }))
         }
         [_, _] => Err(Error::CouldNotCoerceType),
         &_ => Err(Error::InvalidNumberOfArguments),
