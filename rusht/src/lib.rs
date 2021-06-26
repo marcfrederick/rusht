@@ -8,13 +8,13 @@ use std::collections::HashMap;
 
 use thiserror::Error;
 
-use crate::parse::Expr;
-pub use crate::token::Token;
+pub use crate::expr::Expr;
+pub use crate::tokenize::Token;
 
+mod expr;
 mod interpret;
 mod parse;
 mod prelude;
-mod token;
 mod tokenize;
 
 /// Using an enum for Error Handling to call the right message
@@ -72,7 +72,7 @@ impl Interpreter {
     ///
     /// * `input` - Our input from the terminal.
     ///
-    pub fn interpret(&mut self, input: &str) -> Result<Token> {
+    pub fn interpret(&mut self, input: &str) -> Result<Expr> {
         let token_stream = tokenize::tokenize(input);
         let expr = parse::parse(token_stream)?;
         let out = interpret::interpret(expr, &mut self.env)?;

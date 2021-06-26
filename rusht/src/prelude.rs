@@ -5,9 +5,8 @@ use std::collections::HashMap;
 use std::convert::{TryFrom, TryInto};
 use std::io::stdin;
 
-use crate::parse::Expr;
-use crate::token::Token;
 use crate::{Env, Error, Result};
+use crate::expr::Expr;
 
 /// Using macros to initialize the hash map in an easier and compact way.
 /// Each entry of the map has a key and the belongig value.
@@ -58,7 +57,7 @@ pub fn get_prelude() -> Env {
 /// # Errors
 ///
 /// * `InvalidNumberOfArguments` - If there are too less or too many passed arguments.
-fn rusht_if(args: Vec<Token>) -> Result<Token> {
+fn rusht_if(args: Vec<Expr>) -> Result<Expr> {
     if args.len() != 3 {
         return Err(Error::InvalidNumberOfArguments);
     }
@@ -75,12 +74,12 @@ fn rusht_if(args: Vec<Token>) -> Result<Token> {
 /// # Arguments
 ///
 /// * `_` - The upcoming input via terminal.
-fn rusht_read(_: Vec<Token>) -> Result<Token> {
+fn rusht_read(_: Vec<Expr>) -> Result<Expr> {
     let mut buf = String::new();
     stdin()
         .read_line(&mut buf)
         .expect("failed to read from console");
-    Ok(Token::Str(buf))
+    Ok(Expr::Str(buf))
 }
 
 /// Compares the given `args` strictly, meaning they must be of the same type
@@ -89,8 +88,8 @@ fn rusht_read(_: Vec<Token>) -> Result<Token> {
 /// # Arguments
 ///
 /// * `args` - The arguments passed to the function.
-fn rusht_strict_eq(args: Vec<Token>) -> Result<Token> {
-    Ok(Token::Bool(args.windows(2).all(|w| w[0] == w[1])))
+fn rusht_strict_eq(args: Vec<Expr>) -> Result<Expr> {
+    Ok(Expr::Bool(args.windows(2).all(|w| w[0] == w[1])))
 }
 
 /// Compares the numeric values of its arguments using a given comparator
@@ -106,13 +105,13 @@ fn rusht_strict_eq(args: Vec<Token>) -> Result<Token> {
 ///
 /// * `TypeError` - If one or more of the arguments can't be coerced to a
 ///     number.
-fn rusht_cmp<F>(args: Vec<Token>, cmp: F) -> Result<Token>
-where
-    F: Fn(f64, f64) -> bool,
+fn rusht_cmp<F>(args: Vec<Expr>, cmp: F) -> Result<Expr>
+    where
+        F: Fn(f64, f64) -> bool,
 {
     Ok(args
         .into_iter()
-        .map(Token::try_into)
+        .map(Expr::try_into)
         .collect::<Result<Vec<f64>>>()?
         .windows(2)
         .all(|w| cmp(w[0], w[1]))
@@ -130,7 +129,7 @@ where
 /// * `InvalidNumberOfArguments` - If the vector of args has a size greater
 ///     than 1.
 /// * `TypeError` - If the given status code can't be coerced to a number.
-fn rusht_exit(args: Vec<Token>) -> Result<Token> {
+fn rusht_exit(args: Vec<Expr>) -> Result<Expr> {
     if args.len() > 1 {
         return Err(Error::InvalidNumberOfArguments);
     }
@@ -138,7 +137,7 @@ fn rusht_exit(args: Vec<Token>) -> Result<Token> {
     let status_code = args
         .first()
         .cloned()
-        .map(Token::try_into)
+        .map(Expr::try_into)
         .unwrap_or(Ok(0.0))?;
     std::process::exit(status_code as i32);
 }
@@ -157,13 +156,13 @@ fn rusht_exit(args: Vec<Token>) -> Result<Token> {
 /// # Panics
 ///
 /// If one of the args can't be converted to a matching type, a panic occurs.
-fn reduce<T, F>(args: Vec<Token>, reducer: F) -> Result<Token>
-where
-    T: TryFrom<Token, Error = Error> + Into<Token>,
-    F: Fn(T, T) -> T,
+fn reduce<T, F>(args: Vec<Expr>, reducer: F) -> Result<Expr>
+    where
+        T: TryFrom<Expr, Error=Error> + Into<Expr>,
+        F: Fn(T, T) -> T,
 {
     args.into_iter()
-        .map(Token::try_into)
+        .map(Expr::try_into)
         .collect::<Result<Vec<_>>>()?
         .into_iter()
         .reduce(reducer)
@@ -173,8 +172,8 @@ where
 
 #[cfg(test)]
 mod test {
-    use super::Token::*;
     use super::*;
+    use super::Expr::*;
 
     macro_rules! test_prelude {
         ($($name:ident => $key:expr; $input:expr => $expected:expr),*) => {

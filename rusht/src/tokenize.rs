@@ -5,7 +5,15 @@
 use std::iter::Peekable;
 use std::str::Chars;
 
-use crate::token::Token;
+/// Represent the datatypes that are defines as a Token.
+#[derive(Debug, PartialEq)]
+pub enum Token {
+    Paren(char),
+    Num(f64),
+    Str(String),
+    Ident(String),
+    Bool(bool),
+}
 
 /// Takes the input from our terminal and checks each char with allocating it to the right function.
 /// In the end we have each input's type which we pass to the Parser.

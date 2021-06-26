@@ -3,22 +3,13 @@
 //! The input gets splitted by going through the tokenstream and
 //! split each stream's list correctly by parsing it to one knot
 //! with the inside order to manage the right final execution.
+use std::convert::TryInto;
 use std::iter::Peekable;
 
-use crate::token::Token;
 use crate::Error;
+use crate::expr::Expr;
 use crate::Result;
-
-/// Represents a lisp expression.
-#[derive(Debug, PartialEq, Clone)]
-pub enum Expr {
-    /// A single (i.e. atomic) value.
-    Atom(Token),
-    /// A list expressions.
-    List(Vec<Expr>),
-    /// A function type.
-    Func(fn(Vec<Token>) -> Result<Token>),
-}
+use crate::tokenize::Token;
 
 /// Creates an abstract syntax tree from the given (non-empty) token stream.
 /// Here we iterate throught the tokenstream and call
@@ -65,7 +56,7 @@ where
     {
         Token::Paren('(') => parse_nested_expression(token_stream),
         Token::Paren(')') => Err(Error::UnexpectedClosingParenthesis),
-        atom => Ok(Expr::Atom(atom)),
+        atom => atom.try_into(),
     }
 }
 
@@ -101,8 +92,8 @@ where
 
 #[cfg(test)]
 mod test {
-    use super::Token::*;
     use super::*;
+    use super::Token::*;
 
     macro_rules! test_parse {
         ($($name:ident: $input:expr => $expected:expr),*) => {
@@ -117,7 +108,7 @@ mod test {
 
     test_parse!(
         test_empty: vec![Paren('('), Paren(')')] => Ok(Expr::List(vec![])),
-        test_single: vec![Paren('('), Num(4.0), Paren(')')] => Ok(Expr::List(vec![Expr::Atom(Num(4.0))])),
+        test_single: vec![Paren('('), Num(4.0), Paren(')')] => Ok(Expr::List(vec![Expr::Num(4.0)])),
         test_nested: vec![
             Paren('('),
             Num(4.0),
@@ -127,10 +118,10 @@ mod test {
             Paren(')'),
             Paren(')')
         ] => Ok(Expr::List(vec![
-            Expr::Atom(Num(4.0)),
+            Expr::Num(4.0),
             Expr::List(vec![
-                Expr::Atom(Num(5.0)),
-                Expr::Atom(Str("foo".to_string()))
+                Expr::Num(5.0),
+                Expr::Str("foo".to_string())
             ])
         ])),
         test_if: vec![
@@ -141,10 +132,10 @@ mod test {
             Num(4.0),
             Paren(')')
         ] => Ok(Expr::List(vec![
-            Expr::Atom(Ident("if".to_string())),
-            Expr::Atom(Bool(true)),
-            Expr::Atom(Num(2.0)),
-            Expr::Atom(Num(4.0))
+            Expr::Ident("if".to_string()),
+            Expr::Bool(true),
+            Expr::Num(2.0),
+            Expr::Num(4.0)
         ])),
         test_if_nested: vec![
             Paren('('),
@@ -158,14 +149,14 @@ mod test {
             Num(4.0),
             Paren(')')
         ] => Ok(Expr::List(vec![
-            Expr::Atom(Ident("if".to_string())),
+            Expr::Ident("if".to_string()),
             Expr::List(vec![
-                Expr::Atom(Ident("and".to_string())),
-                Expr::Atom(Bool(true)),
-                Expr::Atom(Bool(true))
+                Expr::Ident("and".to_string()),
+                Expr::Bool(true),
+                Expr::Bool(true)
             ]),
-            Expr::Atom(Num(2.0)),
-            Expr::Atom(Num(4.0))
+            Expr::Num(2.0),
+            Expr::Num(4.0)
         ])),
         test_unexpected_closing_paren: vec![Paren(')')] => Err(Error::UnexpectedClosingParenthesis),
         test_unclosed_expression: vec![Paren('(')] => Err(Error::MissingClosingParenthesis),

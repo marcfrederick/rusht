@@ -4,7 +4,7 @@ use anyhow::{Context, Result};
 use clap::{App, Arg};
 use linefeed::{DefaultTerminal, Interface, ReadResult};
 
-use rusht::{Interpreter, Token};
+use rusht::{Expr, Interpreter};
 
 const PROGRAM_NAME: &str = "rusht";
 const REPL_PROMPT: &str = "rusht> ";
@@ -88,6 +88,6 @@ fn history_file_path() -> Option<PathBuf> {
 }
 
 /// Interprets the given `String` and returns the resulting `Token`.
-fn interpret(src: String) -> rusht::Result<Token> {
+fn interpret(src: String) -> rusht::Result<Expr> {
     Interpreter::new().interpret(src.as_str())
 }
