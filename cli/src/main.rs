@@ -56,7 +56,8 @@ fn start_repl() -> Result<()> {
 
 /// Returns an initialized terminal interface.
 ///
-/// The returned value is either an `Ok`, containing an initialized interface, or an `Err`.
+/// The returned value is either an `Ok`, containing an initialized interface,
+/// or an `Err`.
 fn init_reader() -> Result<Interface<DefaultTerminal>> {
     let reader = Interface::new(PROGRAM_NAME).context("failed to get terminal interface")?;
 
@@ -64,6 +65,8 @@ fn init_reader() -> Result<Interface<DefaultTerminal>> {
         .set_prompt(REPL_PROMPT)
         .context("failed to set prompt")?;
     reader.set_history_size(REPL_HISTORY_SIZE);
+    reader.lock_reader().set_string_chars("\"");
+    reader.lock_reader().set_blink_matching_paren(true);
 
     if let Some(p) = history_file_path() {
         if p.exists() {
@@ -71,24 +74,18 @@ fn init_reader() -> Result<Interface<DefaultTerminal>> {
         }
     }
 
-    {
-        let mut reader = reader.lock_reader();
-        reader.set_string_chars("\"");
-        reader.set_blink_matching_paren(true);
-    }
-
     Ok(reader)
 }
 
 /// Returns the path to the REPL history.
 ///
-/// The returned value depends on the operating system and is either a `Some`, containing the path
-/// of an existing history file, or a `None`.
+/// The returned value depends on the operating system and is either a `Some`,
+/// containing the path of an existing history file, or a `None`.
 fn history_file_path() -> Option<PathBuf> {
     dirs::home_dir().map(|d| d.join(REPL_HISTORY_FILE_NAME))
 }
 
 /// Interprets the given `String` and returns the resulting `Token`.
 fn interpret(src: String) -> rusht::Result<Expr> {
-    Interpreter::new().interpret(src.as_str())
+    Interpreter::new().interpret(src)
 }

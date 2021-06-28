@@ -72,8 +72,11 @@ impl Interpreter {
     ///
     /// * `input` - Our input from the terminal.
     ///
-    pub fn interpret(&mut self, input: &str) -> Result<Expr> {
-        let token_stream = tokenize::tokenize(input);
+    pub fn interpret<T>(&mut self, input: T) -> Result<Expr>
+    where
+        T: AsRef<str>,
+    {
+        let token_stream = tokenize::tokenize(input.as_ref());
         let expr = parse::parse(token_stream)?;
         let out = interpret::interpret(expr, &mut self.env)?;
         Ok(out)
