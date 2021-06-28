@@ -159,7 +159,7 @@ mod test {
                     ])),
                 })
             ]),
-            "(5 \"foo\" (bar true) ƛ (a) -> (+ a 1))"
+            "(5 \"foo\" (bar true) λ (a) -> (+ a 1))"
         )
     }
 }
