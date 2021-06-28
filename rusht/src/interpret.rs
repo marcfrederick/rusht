@@ -235,4 +235,77 @@ mod test {
 
         assert_eq!(out, Expr::Num(15.0))
     }
+
+    #[test]
+    fn test_lambda_hello() {
+        let mut env = get_prelude();
+
+        interpret(
+            Expr::List(vec![
+                Expr::Ident("def".to_string()),
+                Expr::Str("hello".to_string()),
+                Expr::List(vec![
+                    Expr::Ident("func".to_string()),
+                    Expr::List(vec![Expr::Ident("name".to_string())]),
+                    Expr::List(vec![
+                        Expr::Ident("concat".to_string()),
+                        Expr::Str("Hello, ".to_string()),
+                        Expr::Ident("name".to_string()),
+                        Expr::Str("!".to_string()),
+                    ]),
+                ]),
+            ]),
+            &mut env,
+        )
+        .expect("error");
+
+        let out = interpret(
+            Expr::List(vec![
+                Expr::Ident("hello".to_string()),
+                Expr::Str("Tester".to_string()),
+            ]),
+            &mut env,
+        )
+        .expect("error");
+
+        assert_eq!(out, Expr::Str("Hello, Tester!".to_string()))
+    }
+
+    #[test]
+    fn test_lambda_nums() {
+        let mut env = get_prelude();
+
+        interpret(
+            Expr::List(vec![
+                Expr::Ident("def".to_string()),
+                Expr::Str("adding".to_string()),
+                Expr::List(vec![
+                    Expr::Ident("func".to_string()),
+                    Expr::List(vec![
+                        Expr::Ident("a".to_string()),
+                        Expr::Ident("b".to_string()),
+                    ]),
+                    Expr::List(vec![
+                        Expr::Ident("+".to_string()),
+                        Expr::Ident("a".to_string()),
+                        Expr::Ident("b".to_string()),
+                    ]),
+                ]),
+            ]),
+            &mut env,
+        )
+        .expect("error");
+
+        let out = interpret(
+            Expr::List(vec![
+                Expr::Ident("adding".to_string()),
+                Expr::Num(3.0),
+                Expr::Num(4.0),
+            ]),
+            &mut env,
+        )
+        .expect("error");
+
+        assert_eq!(out, Expr::Num(7.0))
+    }
 }
