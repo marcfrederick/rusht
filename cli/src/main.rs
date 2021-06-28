@@ -73,8 +73,8 @@ fn init_reader() -> Result<Interface<DefaultTerminal>> {
 
     {
         let mut reader = reader.lock_reader();
-        reader.blink_matching_paren();
         reader.set_string_chars("\"");
+        reader.set_blink_matching_paren(true);
     }
 
     Ok(reader)
