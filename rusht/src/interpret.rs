@@ -2,10 +2,9 @@
 //! Here we pass our built SyntaxTree.
 //! If the tree is built up in the correct way, we can easily parse
 //! through it and call the needed function with the passed arguments.
-use std::convert::TryInto;
-
 use crate::expr::{Expr, Lambda};
 use crate::{Env, Error, Result};
+use std::convert::TryInto;
 
 /// Interprets the given abstract syntax tree, returning  either the resulting
 /// token or an error.
@@ -26,7 +25,7 @@ pub fn interpret(ast: Expr, env: &mut Env) -> Result<Expr> {
         expr @ (Expr::Bool(_) | Expr::Ident(_) | Expr::Str(_) | Expr::Num(_)) => Ok(expr),
         Expr::List(exprs) => match exprs.first() {
             Some(Expr::Ident(ident)) => match ident.as_str() {
-                "def" => interpret_args(&exprs[1..], env).and_then(|args| rusht_def(&args, env)),
+                "def" => rusht_def(&exprs[1..], env),
                 "func" => rusht_lambda(&exprs[1..], env),
                 _ => match env.get(ident).cloned() {
                     Some(Expr::Func(func)) => interpret_args(&exprs[1..], env).and_then(func),
@@ -120,11 +119,12 @@ fn resolve_variables(args: &[Expr], env: &mut Env) -> Result<Vec<Expr>> {
 ///     string.
 fn rusht_def(args: &[Expr], env: &mut Env) -> Result<Expr> {
     match args {
-        [key, val] => {
-            let key = key.clone().try_into()?;
-            env.insert(key, val.clone());
-            Ok(val.clone())
+        [Expr::Ident(key), val] => {
+            let val = interpret(val.clone(), env)?;
+            env.insert(key.clone(), val.clone());
+            Ok(val)
         }
+        [_, _] => Err(Error::CouldNotCoerceType),
         _ => Err(Error::InvalidNumberOfArguments),
     }
 }
@@ -199,7 +199,7 @@ mod test {
         interpret(
             Expr::List(vec![
                 Expr::Ident("def".to_string()),
-                Expr::Str("a".to_string()),
+                Expr::Ident("a".to_string()),
                 Expr::Num(5.0),
             ]),
             &mut env,
@@ -216,7 +216,7 @@ mod test {
         interpret(
             Expr::List(vec![
                 Expr::Ident("def".to_string()),
-                Expr::Str("b".to_string()),
+                Expr::Ident("b".to_string()),
                 Expr::Num(5.0),
             ]),
             &mut env,
@@ -243,7 +243,7 @@ mod test {
         interpret(
             Expr::List(vec![
                 Expr::Ident("def".to_string()),
-                Expr::Str("hello".to_string()),
+                Expr::Ident("hello".to_string()),
                 Expr::List(vec![
                     Expr::Ident("func".to_string()),
                     Expr::List(vec![Expr::Ident("name".to_string())]),
@@ -278,7 +278,7 @@ mod test {
         interpret(
             Expr::List(vec![
                 Expr::Ident("def".to_string()),
-                Expr::Str("adding".to_string()),
+                Expr::Ident("adding".to_string()),
                 Expr::List(vec![
                     Expr::Ident("func".to_string()),
                     Expr::List(vec![
