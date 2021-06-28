@@ -27,20 +27,22 @@ pub enum Error {
     UnexpectedClosingParenthesis,
     #[error("missing expected closing parenthesis")]
     MissingClosingParenthesis,
-    #[error("unable to coerce to correct type")]
-    CouldNotCoerceType,
+    #[error("encountered an unexpected type")]
+    UnexpectedType,
     #[error("invalid number of arguments passed")]
     InvalidNumberOfArguments,
     #[error("function `{0}` is not defined")]
     FunctionNotDefined(String),
-    #[error("missing tokens or cannot be read")]
-    UnreadableTokens,
-    #[error("missing tokens for execution")]
-    MissingTokens, //doesn't exist yet
     #[error("attempted to use function `{0}` as a variable")]
     AttemptedToUseFunctionAsVariable(String),
     #[error("variable `{0}` is not defined")]
     VariableNotDefined(String),
+    #[error("expression `{0}` is not an identifier")]
+    NotAnIdentifier(String),
+    #[error("empty list expression")]
+    EmptyListExpression,
+    #[error("unexpected expression type")]
+    UnexpectedExpressionType,
 }
 
 /// Type resulting either a success (`Ok`) or failure (`Err`)

@@ -30,13 +30,14 @@ pub fn interpret(ast: Expr, env: &mut Env) -> Result<Expr> {
                 _ => match env.get(ident).cloned() {
                     Some(Expr::Func(func)) => interpret_args(&exprs[1..], env).and_then(func),
                     Some(Expr::Lambda(lambda)) => interpret_lambda(lambda, &exprs[1..], env),
-                    Some(_) => Err(Error::UnreadableTokens),
+                    Some(_) => Err(Error::UnexpectedType),
                     None => Err(Error::FunctionNotDefined(ident.to_string())),
                 },
             },
-            _ => Err(Error::UnreadableTokens),
+            Some(expr) => Err(Error::NotAnIdentifier(expr.to_string())),
+            None => Err(Error::EmptyListExpression),
         },
-        _ => Err(Error::UnreadableTokens),
+        _ => Err(Error::UnexpectedExpressionType),
     }
 }
 
@@ -115,7 +116,7 @@ fn resolve_variables(args: &[Expr], env: &mut Env) -> Result<Vec<Expr>> {
 /// # Errors
 ///
 /// * `InvalidNumberOfArguments` - If the length of `args` is not 2.
-/// * `CouldNotCoerceType` - If the first argument could not be coerced to a
+/// * `UnexpectedType` - If the first argument could not be coerced to a
 ///     string.
 fn rusht_def(args: &[Expr], env: &mut Env) -> Result<Expr> {
     match args {
@@ -124,7 +125,7 @@ fn rusht_def(args: &[Expr], env: &mut Env) -> Result<Expr> {
             env.insert(key.clone(), val.clone());
             Ok(val)
         }
-        [_, _] => Err(Error::CouldNotCoerceType),
+        [_, _] => Err(Error::UnexpectedType),
         _ => Err(Error::InvalidNumberOfArguments),
     }
 }
@@ -137,7 +138,7 @@ fn rusht_lambda(exprs: &[Expr], _env: &mut Env) -> Result<Expr> {
                 .cloned()
                 .map(|x| match x {
                     Expr::Ident(x) => Ok(x),
-                    _ => Err(Error::CouldNotCoerceType),
+                    _ => Err(Error::UnexpectedType),
                 })
                 .collect::<Result<Vec<_>>>()?;
 
@@ -146,7 +147,7 @@ fn rusht_lambda(exprs: &[Expr], _env: &mut Env) -> Result<Expr> {
                 body: Box::from(body.clone()),
             }))
         }
-        [_, _] => Err(Error::CouldNotCoerceType),
+        [_, _] => Err(Error::UnexpectedType),
         &_ => Err(Error::InvalidNumberOfArguments),
     }
 }

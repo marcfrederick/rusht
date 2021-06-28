@@ -87,7 +87,7 @@ impl TryFrom<Token> for Expr {
             Token::Str(x) => Ok(Expr::Str(x)),
             Token::Ident(x) => Ok(Expr::Ident(x)),
             Token::Bool(x) => Ok(Expr::Bool(x)),
-            _ => Err(Error::CouldNotCoerceType),
+            _ => Err(Error::UnexpectedType),
         }
     }
 }
@@ -100,8 +100,8 @@ impl TryFrom<Expr> for f64 {
             Expr::Num(n) => Ok(n),
             Expr::Bool(true) => Ok(1.0),
             Expr::Bool(false) => Ok(0.0),
-            Expr::Str(s) => s.trim().parse().map_err(|_| Error::CouldNotCoerceType),
-            _ => Err(Error::CouldNotCoerceType),
+            Expr::Str(s) => s.trim().parse().map_err(|_| Error::UnexpectedType),
+            _ => Err(Error::UnexpectedType),
         }
     }
 }
@@ -114,7 +114,7 @@ impl TryFrom<Expr> for String {
             Expr::Str(s) => Ok(s),
             Expr::Bool(b) => Ok(b.to_string()),
             Expr::Num(n) => Ok(n.to_string()),
-            _ => Err(Error::CouldNotCoerceType),
+            _ => Err(Error::UnexpectedType),
         }
     }
 }
@@ -129,7 +129,7 @@ impl TryFrom<Expr> for bool {
             Expr::Num(_) => Ok(true),
             Expr::Str(s) if ["true", "1"].contains(&s.trim()) => Ok(true),
             Expr::Str(s) if ["false", "0", ""].contains(&s.trim()) => Ok(false),
-            _ => Err(Error::CouldNotCoerceType),
+            _ => Err(Error::UnexpectedType),
         }
     }
 }
