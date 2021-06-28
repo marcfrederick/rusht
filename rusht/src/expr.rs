@@ -37,7 +37,7 @@ impl Display for Expr {
             Expr::Ident(x) => write!(f, "{}", x),
             Expr::Bool(x) => write!(f, "{}", x),
             Expr::Lambda(Lambda { args, body }) => {
-                write!(f, "λ {} -> {}", stringify(args), body.to_string())
+                write!(f, "\u{3bb} {} -> {}", stringify(args), body.to_string())
             }
             Expr::List(list) => write!(f, "{}", stringify(list)),
             Expr::Func(_) => write!(f, "prelude function"),
@@ -87,7 +87,7 @@ impl TryFrom<Token> for Expr {
             Token::Str(x) => Ok(Expr::Str(x)),
             Token::Ident(x) => Ok(Expr::Ident(x)),
             Token::Bool(x) => Ok(Expr::Bool(x)),
-            _ => Err(Error::UnexpectedType),
+            Token::Paren(_) => Err(Error::UnexpectedType),
         }
     }
 }

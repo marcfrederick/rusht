@@ -1,5 +1,5 @@
 //! This is our Lisp Interpreter's third step:
-//! Here we pass our built SyntaxTree.
+//! Here we pass our built syntax tree.
 //! If the tree is built up in the correct way, we can easily parse
 //! through it and call the needed function with the passed arguments.
 use crate::expr::{Expr, Lambda};
@@ -157,7 +157,7 @@ mod test {
     use std::collections::HashMap;
 
     use crate::prelude;
-    use crate::prelude::get_prelude;
+    use crate::prelude::create;
 
     use super::*;
 
@@ -170,7 +170,7 @@ mod test {
                 Expr::Num(5.0),
                 Expr::Num(15.0),
             ]),
-            &mut prelude::get_prelude(),
+            &mut prelude::create(),
         );
         assert_eq!(out, Ok(Expr::Num(24.0)))
     }
@@ -188,7 +188,7 @@ mod test {
                     Expr::Num(5.0),
                 ]),
             ]),
-            &mut prelude::get_prelude(),
+            &mut prelude::create(),
         );
         assert_eq!(out, Ok(Expr::Num(24.0)))
     }
@@ -212,7 +212,7 @@ mod test {
 
     #[test]
     fn test_def_and_use() {
-        let mut env = get_prelude();
+        let mut env = create();
 
         interpret(
             Expr::List(vec![
@@ -239,7 +239,7 @@ mod test {
 
     #[test]
     fn test_lambda_hello() {
-        let mut env = get_prelude();
+        let mut env = create();
 
         interpret(
             Expr::List(vec![
@@ -274,7 +274,7 @@ mod test {
 
     #[test]
     fn test_lambda_nums() {
-        let mut env = get_prelude();
+        let mut env = create();
 
         interpret(
             Expr::List(vec![

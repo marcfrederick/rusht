@@ -4,6 +4,9 @@
 //! And define our important used map to even be
 //! able to handle the written identifiers which
 //! are our operaters with the allocated execution.
+
+#![deny(clippy::pedantic)]
+
 use std::collections::HashMap;
 
 use thiserror::Error;
@@ -57,23 +60,30 @@ pub struct Interpreter {
 }
 
 /// Implementing the Interpreter for our Hashmap by parsing the
-/// needed arguments and function for each identifier to HashMap
+/// needed arguments and function for each identifier to `HashMap`
 /// which is actually the initialization of our Map.
 impl Interpreter {
+    #[must_use]
     pub fn new() -> Interpreter {
         Interpreter {
-            env: prelude::get_prelude(),
+            env: prelude::create(),
         }
     }
 
     /// This function is the heart so that our Lisp Interpreter will work.
     /// This function summarizes our three steps:
     /// the tokenstream which presents our input with the datatypes,
-    /// the expression which presents our parser which handles the AbstractTree,
+    /// the expression which presents our parser which handles the abstract syntax tree,
     /// and the out which presents our interpretation for the execution.
     ///
+    /// # Arguments
     /// * `input` - Our input from the terminal.
     ///
+    /// # Errors
+    ///
+    /// This function can return all the errors returned by the `tokenize`,
+    /// `parse`, and `interpret` functions. For a complete list of possible
+    /// errors check the `Error` enum.
     pub fn interpret<T>(&mut self, input: T) -> Result<Expr>
     where
         T: AsRef<str>,

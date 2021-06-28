@@ -1,6 +1,8 @@
 //! In prelude we define our hash map with its key (operator)
 //! and the belonging value (called function with passed arguments).
 //! Depending on the called operator we defined each a function.
+#![allow(clippy::unnecessary_wraps)]
+
 use std::collections::HashMap;
 use std::convert::{TryFrom, TryInto};
 use std::io::stdin;
@@ -24,7 +26,7 @@ macro_rules! prelude {
 }
 
 /// Returns a prelude (standard library) of often used functions.
-pub fn get_prelude() -> Env {
+pub fn create() -> Env {
     prelude!(
         "+" => |args| reduce(args, |a, b| -> f64 { a + b }),
         "-" => |args| reduce(args, |a, b| -> f64 { a - b }),
@@ -34,10 +36,10 @@ pub fn get_prelude() -> Env {
         "concat" => |args| reduce(args, |a, b| -> String { format!("{}{}", a, b) }),
         "and" => |args| reduce(args, |a, b| -> bool { a && b }),
         "or" => |args| reduce(args, |a, b| -> bool { a || b }),
-        "exit" => rusht_exit,
-        "if" => rusht_if,
-        "read" => rusht_read,
-        "==" => rusht_strict_eq,
+        "exit" => |args| rusht_exit(&args),
+        "if" => |args| rusht_if(&args),
+        "read" => |args| rusht_read(&args),
+        "==" => |args |rusht_strict_eq(&args),
         "=" => |args| rusht_cmp(args, |a, b| (a - b).abs() < f64::EPSILON),
         "<" => |args| rusht_cmp(args, |a, b| a < b),
         "<=" => |args| rusht_cmp(args, |a, b| a <= b),
@@ -57,8 +59,8 @@ pub fn get_prelude() -> Env {
 /// # Errors
 ///
 /// * `InvalidNumberOfArguments` - If there are too less or too many passed arguments.
-fn rusht_if(args: Vec<Expr>) -> Result<Expr> {
-    match args.as_slice() {
+fn rusht_if(args: &[Expr]) -> Result<Expr> {
+    match args {
         [cond, on_true, on_false] => match cond.clone().try_into() {
             Ok(true) => Ok(on_true.clone()),
             Ok(false) => Ok(on_false.clone()),
@@ -73,7 +75,7 @@ fn rusht_if(args: Vec<Expr>) -> Result<Expr> {
 /// # Arguments
 ///
 /// * `_` - The upcoming input via terminal.
-fn rusht_read(_: Vec<Expr>) -> Result<Expr> {
+fn rusht_read(_: &[Expr]) -> Result<Expr> {
     let mut buf = String::new();
     stdin()
         .read_line(&mut buf)
@@ -87,7 +89,7 @@ fn rusht_read(_: Vec<Expr>) -> Result<Expr> {
 /// # Arguments
 ///
 /// * `args` - The arguments passed to the function.
-fn rusht_strict_eq(args: Vec<Expr>) -> Result<Expr> {
+fn rusht_strict_eq(args: &[Expr]) -> Result<Expr> {
     Ok(Expr::Bool(args.windows(2).all(|w| w[0] == w[1])))
 }
 
@@ -128,12 +130,14 @@ where
 /// * `InvalidNumberOfArguments` - If the vector of args has a size greater
 ///     than 1.
 /// * `TypeError` - If the given status code can't be coerced to a number.
-fn rusht_exit(args: Vec<Expr>) -> Result<Expr> {
-    let status_code = match args.as_slice() {
+fn rusht_exit(args: &[Expr]) -> Result<Expr> {
+    let status_code = match args {
         [] => Ok(0.0),
         [status_code] => status_code.clone().try_into(),
         &_ => Err(Error::InvalidNumberOfArguments),
     }?;
+
+    #[allow(clippy::cast_possible_truncation)]
     std::process::exit(status_code as i32);
 }
 
@@ -167,7 +171,7 @@ where
 
 #[cfg(test)]
 mod test {
-    use super::Expr::*;
+    use super::Expr::{Bool, Num, Str};
     use super::*;
 
     macro_rules! test_prelude {
@@ -175,7 +179,7 @@ mod test {
             $(
                 #[test]
                 fn $name() {
-                    match get_prelude().get($key).expect("function name not found in prelude") {
+                    match create().get($key).expect("function name not found in prelude") {
                         Expr::Func(func) => assert_eq!(func($input), $expected),
                         _ => panic!("expression is not a function")
                     }

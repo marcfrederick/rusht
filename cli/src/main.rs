@@ -1,3 +1,5 @@
+#![deny(clippy::pedantic)]
+
 use std::path::PathBuf;
 
 use anyhow::{Context, Result};
@@ -14,7 +16,7 @@ const REPL_HISTORY_SIZE: usize = 100;
 fn main() -> Result<()> {
     let matches = App::new(PROGRAM_NAME)
         .version("0.1.0")
-        .author("Isabella Schön, Marc Trölitzsch")
+        .author("Isabella Sch\u{f6}n, Marc Tr\u{f6}litzsch")
         .arg(Arg::new("FILE").about("program read from script file"))
         .get_matches();
 

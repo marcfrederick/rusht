@@ -1,5 +1,5 @@
 //! This is our Lisp Interpreter's second step:
-//! Here we pass our TokenStream and put it into an AbstractTree.
+//! Here we pass our token stream and put it into an abstract syntax tree.
 //! The input gets splitted by going through the tokenstream and
 //! split each stream's list correctly by parsing it to one knot
 //! with the inside order to manage the right final execution.
