@@ -58,15 +58,14 @@ pub fn get_prelude() -> Env {
 ///
 /// * `InvalidNumberOfArguments` - If there are too less or too many passed arguments.
 fn rusht_if(args: Vec<Expr>) -> Result<Expr> {
-    if args.len() != 3 {
-        return Err(Error::InvalidNumberOfArguments);
+    match args.as_slice() {
+        [cond, on_true, on_false] => match cond.clone().try_into() {
+            Ok(true) => Ok(on_true.clone()),
+            Ok(false) => Ok(on_false.clone()),
+            Err(err) => Err(err),
+        },
+        &_ => Err(Error::InvalidNumberOfArguments),
     }
-
-    // We can safely use unwrap here, as we've previously checked the number of
-    // arguments given to the function.
-    let condition = args.first().unwrap().clone().try_into()?;
-    let out_index = if condition { 1 } else { 2 };
-    Ok(args.get(out_index).unwrap().clone())
 }
 
 /// Reads a line from the terminal.
@@ -130,15 +129,11 @@ where
 ///     than 1.
 /// * `TypeError` - If the given status code can't be coerced to a number.
 fn rusht_exit(args: Vec<Expr>) -> Result<Expr> {
-    if args.len() > 1 {
-        return Err(Error::InvalidNumberOfArguments);
-    }
-
-    let status_code = args
-        .first()
-        .cloned()
-        .map(Expr::try_into)
-        .unwrap_or(Ok(0.0))?;
+    let status_code = match args.as_slice() {
+        [] => Ok(0.0),
+        [status_code] => status_code.clone().try_into(),
+        &_ => Err(Error::InvalidNumberOfArguments),
+    }?;
     std::process::exit(status_code as i32);
 }
 
