@@ -4,7 +4,6 @@
 //! through it and call the needed function with the passed arguments.
 use crate::expr::{Expr, Lambda};
 use crate::{Env, Error, Result};
-use std::convert::TryInto;
 
 /// Interprets the given abstract syntax tree, returning  either the resulting
 /// token or an error.
@@ -27,6 +26,7 @@ pub fn interpret(ast: Expr, env: &mut Env) -> Result<Expr> {
             Some(Expr::Ident(ident)) => match ident.as_str() {
                 "def" => rusht_def(&exprs[1..], env),
                 "func" => rusht_lambda(&exprs[1..], env),
+                "quote" => Ok(Expr::List(exprs[1..].to_vec())),
                 _ => match env.get(ident).cloned() {
                     Some(Expr::Func(func)) => interpret_args(&exprs[1..], env).and_then(func),
                     Some(Expr::Lambda(lambda)) => interpret_lambda(lambda, &exprs[1..], env),
