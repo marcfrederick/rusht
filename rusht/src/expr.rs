@@ -4,12 +4,20 @@ use std::fmt::{Display, Formatter};
 use crate::tokenize::Token;
 use crate::{Error, Result};
 
+/// Lambda is a struct representing a single lambda expression.
 #[derive(Debug, PartialEq, Clone)]
 pub struct Lambda {
+    /// The names of the arguments of the lambda expression. On invocation of
+    /// the lambda, these will be defined as variables corresponding to the
+    /// passed values.
     pub args: Vec<String>,
+
+    /// The body of the lambda. This body will be interpreted upon invocation
+    /// of the lambda expression.
     pub body: Box<Expr>,
 }
 
+/// An expression in the "Rusht" language.
 #[derive(Debug, PartialEq, Clone)]
 pub enum Expr {
     Num(f64),
