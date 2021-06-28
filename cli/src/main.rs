@@ -64,8 +64,11 @@ fn init_reader() -> Result<Interface<DefaultTerminal>> {
         .set_prompt(REPL_PROMPT)
         .context("failed to set prompt")?;
     reader.set_history_size(REPL_HISTORY_SIZE);
+
     if let Some(p) = history_file_path() {
-        reader.load_history(p).context("failed to load history")?
+        if p.exists() {
+            reader.load_history(p).context("failed to load history")?
+        }
     }
 
     {
@@ -82,9 +85,7 @@ fn init_reader() -> Result<Interface<DefaultTerminal>> {
 /// The returned value depends on the operating system and is either a `Some`, containing the path
 /// of an existing history file, or a `None`.
 fn history_file_path() -> Option<PathBuf> {
-    dirs::home_dir()
-        .map(|d| d.join(REPL_HISTORY_FILE_NAME))
-        .filter(|p| p.exists())
+    dirs::home_dir().map(|d| d.join(REPL_HISTORY_FILE_NAME))
 }
 
 /// Interprets the given `String` and returns the resulting `Token`.
