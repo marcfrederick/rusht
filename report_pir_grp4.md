@@ -6,6 +6,8 @@ Interpreter Lisp-Code mittels einer REPL (Read-Eval-Print-Loop) einliest und int
 Hierbei war es uns wichtig nicht einfach auf Bibliotheken, die die Generation des Parsers übernehmen, zurückzugreifen,
 sondern jeden Schritt vom Tokenizen über das Parsen bis hin zum Interpretieren selber zu implementieren.
 
+Weiter Informationen über das Projekt sind in der `README.md` auffindbar.
+
 ## Was haben Sie bei der Realisierung gelernt?
 
 Im Rahmen unseres Projektes haben wir uns intensiv mit der Implementierung von Parsern und Interpretern beschäftigt.
@@ -47,10 +49,26 @@ Zusammen haben via Code-With-Me gearbeitet, da wir zusammen an dem Projekt arbei
 
 ## Gehen Sie auf Schwierigkeiten ein, sofern es welche gab.
 
-Bei der Implementierung von Lambda-Funktionen sind wir auf ein Problem mit unserer Implementierung des Parsers gestoßen,
-die größere Änderungen am bestehenden Code erforderten. Insbesondere war eine Änderung an der Art und Weise, wie wir die
-beim Parsen erstellten Ausdrücke speichern, erforderlich.
+### Fehlerbehandlung
 
-Zuvor hatten wir hier lediglich die bereits beim Tokenizen generierten Tokens in einem `Expr` enum gespeichert und
-wiederverwendet. Sämtliche in der Prelude definierten Funktionen hatten den Typ `fn(Vec<Token>) -> Result<Token, Error>`
-.
+Bei der Programmierung des ursprünglichen Prototyps des Rusht Interpreters hatten wir anfangs wenig Priorität auf
+korrekte Fehlerbehandlung gelegt. Daher hatten wir an vielen Stellen im Code Aufrufe an `panic!()`, `unwrap()`,
+und `expect()`. Das führte bei der Implementierung der REPL zu Problemen, da jede falsche Eingabe zu einer Panik und
+damit auch zur Beendigung der REPL führte. Daher hatten wir an dieser Stelle versucht diese Paniken mit
+der `std::panic::catch_unwind` Funktion abzufangen und zu behandeln, aber es wurde klar, dass wir auf echte
+Fehlerbehandlung und den damit einhergehenden `Result` Datentypen umbauen mussten.
+
+Der Umbau an sich erforderte große Änderungen an der Code-Basis und war sehr zeitaufwändig. Würden wir das Projekt
+nochmal durchführen, würden wir sicherstellen, dass wir von vornherein Fehler ordentlich behandeln, da sich die
+initialen Zeitersparnisse später rächen.
+
+### Interpreter
+
+Weiterhin sind wir bei der Implementierung der Lambda-Funktionen auf ein Problem mit der Implementierung unseres
+Interpreters und der Prelude gestoßen, die ebenfalls größere Änderungen am bestehenden Code erforderten. Funktionen
+waren derart konzipiert, dass diese die Signatur `fn(Vec<Token>) -> Result<Token, Error>` hatten. Dies führte bei der
+implementierung von Lambda ausdrücken zu Problemen, da die Variablendefinition ebenfalls nur mit Elementen vom
+Typ `Token`, die also schon beim Tokenizen bekannt waren, funktionierte.
+
+Um dieses Problem zu beheben, haben wir unseren Code derart umgeschrieben, dass sämtlicher Code außerhalb des Tokenizers
+selber mit Elementen vom `Expr`-Typen arbeiten.
