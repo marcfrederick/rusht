@@ -44,8 +44,59 @@ pub fn create() -> Env {
         "<" => |args| rusht_cmp(args, |a, b| a < b),
         "<=" => |args| rusht_cmp(args, |a, b| a <= b),
         ">" => |args| rusht_cmp(args, |a, b| a > b),
-        ">=" => |args| rusht_cmp(args, |a, b| a >= b)
+        ">=" => |args| rusht_cmp(args, |a, b| a >= b),
+        "nth" => |args| rusht_nth(&args),
+        "append" => |args| rusht_append(&args)
     )
+}
+
+/// Returns the nth element of a given list.
+///
+/// # Arguments
+/// * `args[0]` - The index of the element to return.
+/// * `args[1]` - The list on which to operate.
+///
+/// # Errors
+/// * `IndexOutOfBounds` - If the given index is out of bounds of the list.
+/// * `UnexpectedType` - If the index can't be coerced to a number or the
+///     second argument is not a list.
+/// * `InvalidNumberOfArguments` - If the number of arguments in not two.
+fn rusht_nth(args: &[Expr]) -> Result<Expr> {
+    match args {
+        [index, Expr::List(list)] => {
+            let index: f64 = index.clone().try_into()?;
+
+            #[allow(clippy::cast_sign_loss, clippy::cast_possible_truncation)]
+            list.get(index as usize)
+                .cloned()
+                .ok_or(Error::IndexOutOfBounds(index as usize))
+        }
+        [_, _] => Err(Error::UnexpectedType),
+        &_ => Err(Error::InvalidNumberOfArguments),
+    }
+}
+
+/// Appends an element to the end of a given list. The operation is made out
+/// of place, meaning a modified copy of the list is returned.
+///
+/// # Arguments
+/// * `args[0]` - The element to append to the list.
+/// * `args[1]` - The list on which to operate.
+///
+/// # Errors
+/// * `UnexpectedType` - If the index can't be coerced to a number or the
+///     second argument is not a list.
+/// * `InvalidNumberOfArguments` - If the number of arguments in not two.
+fn rusht_append(args: &[Expr]) -> Result<Expr> {
+    match args {
+        [elem, Expr::List(list)] => {
+            let mut list = list.clone();
+            list.push(elem.clone());
+            Ok(Expr::List(list))
+        }
+        [_, _] => Err(Error::UnexpectedType),
+        &_ => Err(Error::InvalidNumberOfArguments),
+    }
 }
 
 /// Checks a given condition and returns one of two possible values.
@@ -171,7 +222,7 @@ where
 
 #[cfg(test)]
 mod test {
-    use super::Expr::{Bool, Num, Str};
+    use super::Expr::{Bool, List, Num, Str};
     use super::*;
 
     macro_rules! test_prelude {
@@ -214,6 +265,9 @@ mod test {
         smaller => "<"; vec![Num(5.0), Num(4.9)] => Ok(Bool(false)),
         equal_smaller => "<="; vec![Num(3.0), Num(3.1)] => Ok(Bool(true)),
         compare_true => "=="; vec![Num(4.0), Num(4.0)]=> Ok(Bool(true)),
-        compare_false => "=="; vec![Num(4.0), Num(3.0)] => Ok(Bool(false))
+        compare_false => "=="; vec![Num(4.0), Num(3.0)] => Ok(Bool(false)),
+        nth => "nth"; vec![Num(1.0), List(vec![Num(1.0), Num(2.0)])] => Ok(Num(2.0)),
+        nth_out_of_bounds => "nth"; vec![Num(5.0), List(vec![Num(1.0), Num(2.0)])] => Err(Error::IndexOutOfBounds(5)),
+        append => "append"; vec![Num(3.0), List(vec![Num(1.0), Num(2.0)])] => Ok(List(vec![Num(1.0), Num(2.0), Num(3.0)]))
     );
 }

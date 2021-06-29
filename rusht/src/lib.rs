@@ -46,6 +46,8 @@ pub enum Error {
     EmptyListExpression,
     #[error("unexpected expression type")]
     UnexpectedExpressionType,
+    #[error("index `{0}` is out of bounds")]
+    IndexOutOfBounds(usize),
 }
 
 /// Type resulting either a success (`Ok`) or failure (`Err`)
