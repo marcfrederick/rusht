@@ -5,6 +5,7 @@
 //! able to handle the written identifiers which
 //! are our operaters with the allocated execution.
 
+#![forbid(unsafe_code)]
 #![deny(clippy::pedantic)]
 
 use std::collections::HashMap;

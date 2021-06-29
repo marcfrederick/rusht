@@ -1,3 +1,4 @@
+#![forbid(unsafe_code)]
 #![deny(clippy::pedantic)]
 
 use std::path::PathBuf;
