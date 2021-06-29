@@ -1,3 +1,17 @@
+//! The expression type of the Rusht language. Different expression types are
+//! represented by the different variants of the `Expr` enum.
+//!
+//! This module also implements conversion methods from Rusht to Rust types
+//! and vice versa. Conversions from Rusht to Rust are implemented using the
+//! `TryInto` trait and perform type coercion. This means, that an
+//! `Expr::Str("1")` could be coerced to the `String` `"1"`, the `f64` `1.0`,
+//! the `bool` `true`, ... depending on context.
+//!
+//! As not every Rusht type can be converted to every Rust type, this
+//! conversion is not guaranteed to succeed and is thus implemented using the
+//! `TryFrom` trait. Conversely, conversion in the other direction is
+//! guaranteed to succeed and is thus implemented using the `Into` trait.
+
 use std::convert::TryFrom;
 use std::fmt::{Display, Formatter};
 
@@ -29,6 +43,8 @@ pub enum Expr {
     Lambda(Lambda),
 }
 
+/// This implementation of the `Display` trait determines how the different
+/// expressions are displayed in the REPL.
 impl Display for Expr {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
@@ -159,7 +175,7 @@ mod test {
                     ])),
                 })
             ]),
-            "(5 \"foo\" (bar true) λ (a) -> (+ a 1))"
+            "(5 \"foo\" (bar true) \u{3bb} (a) -> (+ a 1))"
         )
     }
 }

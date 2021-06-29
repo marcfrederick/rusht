@@ -44,8 +44,6 @@ pub enum Error {
     NotAnIdentifier(String),
     #[error("empty list expression")]
     EmptyListExpression,
-    #[error("unexpected expression type")]
-    UnexpectedExpressionType,
     #[error("index `{0}` is out of bounds")]
     IndexOutOfBounds(usize),
 }

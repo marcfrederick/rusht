@@ -18,14 +18,14 @@ use crate::{Env, Error, Result};
 /// * `VariableNotDefined` - When the arguments contain an identifier, for
 ///     which no corresponding value is found in the execution environment.
 /// * `FunctionNotDefined` - When attempting to call an undefined function.
-/// * `UnreadableTokens` - TODO
+/// * `UnexpectedType` - If an unexpected type was encountered.
 pub fn interpret(ast: Expr, env: &mut Env) -> Result<Expr> {
     match ast {
         expr @ (Expr::Bool(_) | Expr::Ident(_) | Expr::Str(_) | Expr::Num(_)) => Ok(expr),
         Expr::List(exprs) => match exprs.first() {
             Some(Expr::Ident(ident)) => match ident.as_str() {
                 "def" => rusht_def(&exprs[1..], env),
-                "func" => rusht_lambda(&exprs[1..], env),
+                "func" => rusht_lambda(&exprs[1..]),
                 "quote" => Ok(Expr::List(exprs[1..].to_vec())),
                 _ => match env.get(ident).cloned() {
                     Some(Expr::Func(func)) => interpret_args(&exprs[1..], env).and_then(func),
@@ -37,19 +37,30 @@ pub fn interpret(ast: Expr, env: &mut Env) -> Result<Expr> {
             Some(expr) => Err(Error::NotAnIdentifier(expr.to_string())),
             None => Err(Error::EmptyListExpression),
         },
-        _ => Err(Error::UnexpectedExpressionType),
+        _ => Err(Error::UnexpectedType),
     }
 }
 
+/// Interprets a lambda expression and returns the resulting expression. A
+/// lambda creates a copy of its surrounding execution environment.
+///
+/// # Arguments
+///
+/// * `lambda` - A lambda expression to be evaluated.
+/// * `given_args` - The arguments passed at the invocation.
+/// * `env` - The current execution environment.
 fn interpret_lambda(lambda: Lambda, given_args: &[Expr], env: &Env) -> Result<Expr> {
     if lambda.args.len() != given_args.len() {
         return Err(Error::InvalidNumberOfArguments);
     }
 
+    // create a local copy of the execution environment and add the passed
+    // arguments as variables to this new local environment.
     let mut local_env = env.clone();
     for (key, val) in lambda.args.iter().zip(&mut given_args.iter()) {
         local_env.insert(key.clone(), val.clone());
     }
+
     interpret(*lambda.body, &mut local_env)
 }
 
@@ -130,7 +141,20 @@ fn rusht_def(args: &[Expr], env: &mut Env) -> Result<Expr> {
     }
 }
 
-fn rusht_lambda(exprs: &[Expr], _env: &mut Env) -> Result<Expr> {
+/// Constructs a lambda expression from the given arguments.
+///
+/// # Arguments
+///
+/// * `exprs[0]` - A list of identifiers representing the arguments of the
+///     lambda expression.
+/// * `exprs[1]` - The body of the lambda expression
+///
+/// # Errors
+///
+/// * `UnexpectedType` - If the first argument is not of type `Expr::List`.
+/// * `InvalidNumberOfArguments` - If the number of arguments is not equal to
+///     two.
+fn rusht_lambda(exprs: &[Expr]) -> Result<Expr> {
     match exprs {
         [Expr::List(args), body] if args.iter().all(|x| matches!(x, Expr::Ident(_))) => {
             let args = args
@@ -138,7 +162,7 @@ fn rusht_lambda(exprs: &[Expr], _env: &mut Env) -> Result<Expr> {
                 .cloned()
                 .map(|x| match x {
                     Expr::Ident(x) => Ok(x),
-                    _ => Err(Error::UnexpectedType),
+                    _ => unreachable!("previously checked using the match guard"),
                 })
                 .collect::<Result<Vec<_>>>()?;
 
